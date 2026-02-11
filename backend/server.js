@@ -32,6 +32,8 @@ app.use('/api/categories', require('./routes/category'));
 app.use('/api/news', require('./routes/news'));
 app.use('/api/comments', require('./routes/comment'));
 
+app.options('*', cors());
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Server is running', timestamp: new Date() });
