@@ -1,0 +1,125 @@
+const express = require('express');
+const router = express.Router();
+const News = require('../models/News');
+const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
+
+// Get all news
+router.get('/', async (req, res) => {
+  try {
+    const { category } = req.query;
+    const filter = category ? { category } : {};
+    
+    const news = await News.find(filter)
+      .populate('category', 'name slug')
+      .sort({ createdAt: -1 });
+    
+    res.json(news);
+  } catch (error) {
+    console.error('Get news error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลข่าว' });
+  }
+});
+
+// Get single news
+router.get('/:id', async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id).populate('category', 'name slug');
+    
+    if (!news) {
+      return res.status(404).json({ message: 'ไม่พบข่าว' });
+    }
+    
+    // เพิ่มจำนวนผู้เข้าชม
+    news.views += 1;
+    await news.save();
+    
+    res.json(news);
+  } catch (error) {
+    console.error('Get news error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+  }
+});
+
+// Get news by category
+router.get('/category/:categoryId', async (req, res) => {
+  try {
+    const news = await News.find({ category: req.params.categoryId })
+      .populate('category', 'name slug')
+      .sort({ createdAt: -1 });
+    
+    res.json(news);
+  } catch (error) {
+    console.error('Get news by category error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
+  }
+});
+
+// Create news (Admin only)
+router.post('/', auth, admin, async (req, res) => {
+  try {
+    const { title, content, excerpt, image, category, author } = req.body;
+    
+    const news = new News({
+      title,
+      content,
+      excerpt,
+      image,
+      category,
+      author
+    });
+    
+    await news.save();
+    const populatedNews = await News.findById(news._id).populate('category', 'name slug');
+    
+    res.status(201).json({ message: 'สร้างข่าวสำเร็จ', news: populatedNews });
+  } catch (error) {
+    console.error('Create news error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการสร้างข่าว' });
+  }
+});
+
+// Update news (Admin only)
+router.put('/:id', auth, admin, async (req, res) => {
+  try {
+    const { title, content, excerpt, image, category, author } = req.body;
+    
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ message: 'ไม่พบข่าว' });
+    }
+    
+    if (title) news.title = title;
+    if (content) news.content = content;
+    if (excerpt) news.excerpt = excerpt;
+    if (image) news.image = image;
+    if (category) news.category = category;
+    if (author) news.author = author;
+    
+    await news.save();
+    const populatedNews = await News.findById(news._id).populate('category', 'name slug');
+    
+    res.json({ message: 'อัปเดตข่าวสำเร็จ', news: populatedNews });
+  } catch (error) {
+    console.error('Update news error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการอัปเดตข่าว' });
+  }
+});
+
+// Delete news (Admin only)
+router.delete('/:id', auth, admin, async (req, res) => {
+  try {
+    const news = await News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ message: 'ไม่พบข่าว' });
+    }
+    
+    await News.findByIdAndDelete(req.params.id);
+    res.json({ message: 'ลบข่าวสำเร็จ' });
+  } catch (error) {
+    console.error('Delete news error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการลบข่าว' });
+  }
+});
+
+module.exports = router;

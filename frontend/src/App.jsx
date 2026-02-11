@@ -1,0 +1,48 @@
+import React from 'react'
+import { BrowserRouter , Routes , Route} from 'react-router-dom'
+import Home from './pages/Home'
+import News from './pages/News'
+import NewsDetail from './pages/NewsDetail'
+import CategoryNews from './pages/CategoryNews'
+import Library from './pages/Library'
+import LibraryDetail from './pages/LibraryDetail'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import Profile from './pages/Profile'
+import AdminDashboard from './pages/AdminDashboard'
+import About from './pages/About'
+
+function App() {
+  return (
+    <BrowserRouter>
+    <Routes>
+      <Route path='/' element={<Home />}>
+      </Route>
+      <Route path='/news' element={<News />}>
+      </Route>
+      <Route path='/news/:id' element={<NewsDetail />}>
+      </Route>
+      <Route path='/news/category/:categoryName' element={<CategoryNews />}>
+      </Route>
+      <Route path='/library/' element={<Library />}>
+      </Route>
+      <Route path='/library/:id' element={<LibraryDetail />}>
+      </Route>
+      <Route path='/login' element={<Login />}>
+      </Route>
+      <Route path='/register' element={<Register />}>
+      </Route>
+      <Route path='/profile' element={<Profile />}>
+      </Route>
+      <Route path='/admin' element={<AdminDashboard />}>
+      </Route>
+      <Route path='/about' element={<About />} />
+      <Route path='/contact' element={<About />} />
+      <Route path='/privacy' element={<About />} />
+      <Route path='/terms' element={<About />} />
+    </Routes>
+    </BrowserRouter>
+  )
+}
+
+export default App

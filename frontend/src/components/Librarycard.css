@@ -1,0 +1,116 @@
+.library-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.view-all-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #004d40;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Grid จัดการ 4 คอลัมน์ */
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  text-decoration: none;
+}
+
+.lib-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  transition: transform 0.2s;
+}
+
+.lib-card:hover {
+  transform: translateY(-5px);
+}
+
+.lib-image-wrapper {
+  position: relative;
+  aspect-ratio: 16 / 10;
+}
+
+.lib-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lib-tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #004d40; /* สีเขียวเข้มสไตล์ต้นฉบับ */
+  color: white;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.lib-info {
+  padding: 15px;
+  text-decoration: none;
+}
+
+.lib-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.lib-views {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #666;
+  font-size: 13px;
+}
+
+/* ลบเส้นขีดล่างและสีจากทุกลิงก์ที่หุ้มการ์ด */
+.lib-link-wrapper {
+  text-decoration: none; /* ลบเส้นขีดล่าง */
+  color: inherit;       /* ให้ใช้สีตามสีปกติของตัวหนังสือ */
+  display: block;       /* เพื่อให้ครอบคลุมพื้นที่ทั้งหมด */
+}
+
+/* เพิ่มเติม: ทำให้คนใช้รู้ว่ากดได้ (Pointer) */
+.lib-card {
+  cursor: pointer;
+}
+@media (max-width: 1024px) {
+  .library-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .library-grid {
+    grid-template-columns: 1fr;
+  }
+  .section-title {
+    font-size: 18px;
+  }
+}

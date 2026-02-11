@@ -1,0 +1,101 @@
+.popular-container {
+    max-width: 800px; /* ส่วนยอดนิยมมักจะไม่กว้างเต็มหน้าเหมือน Grid */
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.popular-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.popular-item {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    transition: 0.2s;
+    cursor: pointer;
+}
+
+.popular-item:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-color: #004d40;
+}
+
+/* ตัวเลขลำดับ (Rank) */
+.popular-rank {
+    min-width: 45px;
+    height: 45px;
+    background: #004d40; /* สีเขียวเข้มสไตล์ P PAL */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-right: 20px;
+}
+
+.popular-content {
+    flex: 1;
+}
+
+.popular-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    /* ตัดบรรทัดกรณีหัวข้อยาวมาก */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.popular-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 13px;
+    color: #888;
+}
+
+.pop-category {
+    color: #555;
+    font-weight: 500;
+}
+
+.pop-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pop-info svg {
+    color: #004d40;
+}
+@media (max-width: 576px) {
+    .popular-item {
+        padding: 15px;
+    }
+    .popular-rank {
+        min-width: 35px;
+        height: 35px;
+        font-size: 1rem;
+        margin-right: 15px;
+    }
+    .popular-title {
+        font-size: 14px;
+    }
+    .popular-meta {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+}

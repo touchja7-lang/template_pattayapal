@@ -1,0 +1,190 @@
+.library-detail-wrapper {
+    font-family: 'Kanit', sans-serif;
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 8px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ส่วนหัวภาพ */
+.library-hero {
+    position: relative;
+    height: 450px;
+    width: 100%;
+}
+
+.library-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.library-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(16, 44, 116, 0.9), rgba(0, 0, 0, 0.2));
+    display: flex;
+    align-items: flex-end;
+    padding: 40px;
+}
+
+.library-header-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    color: white;
+}
+
+.library-badge {
+    background: #00a859;
+    padding: 5px 15px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.library-main-title {
+    font-size: 2rem;
+    margin: 15px 0;
+    line-height: 1.4;
+}
+
+.library-meta {
+    display: flex;
+    gap: 20px;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    align-items: center;
+}
+
+.library-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ส่วนเนื้อหา */
+.library-body-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.library-info-section {
+    margin-bottom: 30px;
+}
+
+.library-info-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.library-description {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.library-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.library-detail-item {
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #00a859;
+}
+
+.detail-icon {
+    font-size: 2rem;
+    color: #00a859;
+    flex-shrink: 0;
+}
+
+.library-detail-item h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.library-detail-item p {
+    font-size: 0.95rem;
+    color: #666;
+    line-height: 1.6;
+}
+
+.library-not-found {
+    max-width: 800px;
+    margin: 100px auto;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.library-not-found h2 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.back-to-library {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #00a859;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.back-to-library:hover {
+    background: #008a48;
+}
+
+@media (max-width: 768px) {
+    .library-hero {
+        height: 300px;
+    }
+
+    .library-main-title {
+        font-size: 1.5rem;
+    }
+
+    .library-overlay {
+        padding: 20px;
+    }
+
+    .library-details-grid {
+        grid-template-columns: 1fr;
+    }
+}
