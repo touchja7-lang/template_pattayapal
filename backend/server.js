@@ -13,7 +13,7 @@ connectDB();
 app.use(cors({
   // ตัด / ตัวสุดท้ายออก และรองรับทั้ง Production และ Localhost
   origin: [
-    'https://template-pattayapal-u6n3-touchkrubbs-projects.vercel.app',
+    'https://template-pattayapal-u6n3.vercel.app/',
     'http://localhost:5173' 
   ],
   credentials: true, // อนุญาตให้ส่ง Cookie/Token
