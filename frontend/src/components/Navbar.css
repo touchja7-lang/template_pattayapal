@@ -179,3 +179,75 @@
         display: block;
     }
 }
+
+/* คอนเทนเนอร์หลักของเมนูที่เด้งลงมา */
+.user-dropdown {
+    position: absolute;
+    top: 55px;
+    right: 0;
+    background-color: #ffffff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15); /* เพิ่มเงาให้ดูมีมิติ */
+    border-radius: 12px;
+    padding: 10px 0;
+    min-width: 220px;
+    z-index: 1000;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column; /* จัดเรียงจากบนลงล่าง */
+}
+
+/* ส่วนแสดงชื่อผู้ใช้งาน */
+.user-name, .dropdown-user-name {
+    font-size: 15px;
+    font-weight: 700;
+    padding: 12px 20px;
+    color: #333;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* ลิงก์เมนูต่างๆ (โปรไฟล์ / แอดมิน) */
+.dropdown-item, .dropdown-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: #444;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover, .dropdown-link:hover {
+    background-color: #f8f9fa;
+    color: #004a7c;
+    padding-left: 25px; /* เพิ่มลูกเล่นขยับขวาเวลาเอาเมาส์ชี้ */
+}
+
+/* ปุ่มออกจากระบบ */
+.logout-btn, .logout-button {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 20px;
+    background-color: transparent;
+    border: none;
+    border-top: 1px solid #f0f0f0; /* เส้นคั่นแยกโซนออกจากระบบ */
+    font-size: 14px;
+    color: #dc3545; /* สีแดงสำหรับปุ่มอันตราย */
+    cursor: pointer;
+    text-align: left;
+    margin-top: 5px;
+    transition: background-color 0.2s;
+}
+
+.logout-btn:hover, .logout-button:hover {
+    background-color: #fff5f5;
+}
+
+/* ไอคอนภายในเมนู */
+.dropdown-item svg, .logout-btn svg {
+    font-size: 18px;
+}
