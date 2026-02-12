@@ -7,11 +7,11 @@ import { HiOutlineCamera, HiArrowLeft } from "react-icons/hi";
 import '../css/Profile.css';
 
 function Profile() {
+  // ดึงข้อมูล user และฟังก์ชัน login (หรือ updateUser) จาก Context
   const { user, login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   
-  // Refs สำหรับเรียกใช้ Input File แบบซ่อน
   const profileInputRef = useRef(null);
   const backgroundInputRef = useRef(null);
 
@@ -29,8 +29,8 @@ function Profile() {
     email: '',
     profileImage: avatars[0].url,
     backgroundImage: null,
-    profileFile: null,   // เก็บไฟล์รูปโปรไฟล์จริง
-    backgroundFile: null  // เก็บไฟล์รูปพื้นหลังจริง
+    profileFile: null,
+    backgroundFile: null
   });
 
   useEffect(() => {
@@ -45,16 +45,15 @@ function Profile() {
     }
   }, [user]);
 
-  // ฟังก์ชันจัดการการเลือกรูปภาพ (ทั้งโปรไฟล์และพื้นหลัง)
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (type === 'profile') {
-          setFormData({ ...formData, profileImage: reader.result, profileFile: file });
+          setFormData(prev => ({ ...prev, profileImage: reader.result, profileFile: file }));
         } else {
-          setFormData({ ...formData, backgroundImage: reader.result, backgroundFile: file });
+          setFormData(prev => ({ ...prev, backgroundImage: reader.result, backgroundFile: file }));
         }
       };
       reader.readAsDataURL(file);
@@ -62,7 +61,7 @@ function Profile() {
   };
 
   const handleAvatarSelect = (url) => {
-    setFormData({ ...formData, profileImage: url, profileFile: null });
+    setFormData(prev => ({ ...prev, profileImage: url, profileFile: null }));
   };
 
   const handleSubmit = async (e) => {
@@ -71,21 +70,40 @@ function Profile() {
     setMessage({ type: '', text: '' });
 
     try {
-      // ใช้ FormData หากคุณต้องการส่งไฟล์ไปยัง Backend จริงๆ
       const data = new FormData();
       data.append('fullName', formData.fullName);
       data.append('email', formData.email);
-      if (formData.profileFile) data.append('profileImage', formData.profileFile);
-      else data.append('profileImage', formData.profileImage);
       
-      if (formData.backgroundFile) data.append('backgroundImage', formData.backgroundFile);
+      // ถ้ามีการอัปโหลดไฟล์ใหม่ ให้ส่งไฟล์ไป
+      if (formData.profileFile) {
+        data.append('profileImage', formData.profileFile);
+      } else {
+        // ถ้าใช้รูป Avatar จากลิสต์ ให้ส่ง URL ไปแทน
+        data.append('profileImage', formData.profileImage);
+      }
+      
+      if (formData.backgroundFile) {
+        data.append('backgroundImage', formData.backgroundFile);
+      }
 
+      // เรียก API อัปเดตโปรไฟล์
       const response = await authAPI.updateProfile(data);
+      
+      // ดึง Token เดิมที่มีอยู่
       const token = localStorage.getItem('token');
-      login(response.data.user, token);
-      setMessage({ type: 'success', text: 'บันทึกการเปลี่ยนแปลงสำเร็จ' });
+      
+      // ✅ หัวใจสำคัญ: เรียก login หรือฟังก์ชันอัปเดตเพื่อเปลี่ยน State ใน Context ทันที
+      // ข้อมูล user ใหม่จาก Backend จะทำให้ Navbar เปลี่ยนรูปตาม
+      if (response.data.user) {
+        login(response.data.user, token);
+        setMessage({ type: 'success', text: 'บันทึกการเปลี่ยนแปลงสำเร็จ' });
+      }
     } catch (err) {
-      setMessage({ type: 'error', text: err.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึก' });
+      console.error("Update Profile Error:", err);
+      setMessage({ 
+        type: 'error', 
+        text: err.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึก' 
+      });
     } finally {
       setLoading(false);
     }
@@ -140,11 +158,11 @@ function Profile() {
                   onChange={(e) => handleFileChange(e, 'profile')}
                 />
                 <div className="upload-box-dashed mt-4" onClick={() => profileInputRef.current.click()}>
-                   <div className="upload-content">
+                    <div className="upload-content">
                       <HiOutlineCamera className="upload-icon" />
                       <p>หรืออัปโหลดรูปของคุณเอง</p>
                       <span>รองรับ JPG, PNG (สูงสุด 3MB)</span>
-                   </div>
+                    </div>
                 </div>
               </div>
 
@@ -169,11 +187,11 @@ function Profile() {
                   onChange={(e) => handleFileChange(e, 'background')}
                 />
                 <div className="upload-box-dashed mt-3" onClick={() => backgroundInputRef.current.click()}>
-                   <div className="upload-content">
+                    <div className="upload-content">
                       <HiOutlineCamera className="upload-icon" />
                       <p>คลิกเพื่ออัปโหลด <span>หรือลากไฟล์มาวางที่นี่</span></p>
                       <span>รองรับ JPG, PNG, GIF, WEBP (สูงสุด 5MB)</span>
-                   </div>
+                    </div>
                 </div>
 
                 <div className="info-form-section">
@@ -195,7 +213,7 @@ function Profile() {
             <div className="profile-footer-actions">
               <div className={`status-msg ${message.type}`}>{message.text}</div>
               <div className="btn-group">
-                <button type="button" className="btn-cancel" onClick={() => window.location.reload()}>ยกเลิก</button>
+                <button type="button" className="btn-cancel" onClick={() => window.location.reload()}>คืนค่า</button>
                 <button type="submit" className="btn-save" disabled={loading}>
                   {loading ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง'}
                 </button>
