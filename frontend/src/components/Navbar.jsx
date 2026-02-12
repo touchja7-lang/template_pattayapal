@@ -13,9 +13,9 @@ function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // รูป Default กรณีไม่มีรูปในระบบหรือโหลดรูปไม่ขึ้น
   const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/616/616408.png';
 
-  // รายการหมวดหมู่ (เอาคำว่า "ข่าว" ออกจากลิสต์นี้เพื่อไปแยก Link ต่างหาก)
   const categories = ["กีฬา", "บันเทิง", "เทคโนโลยี", "เศรษฐกิจ"];
 
   const handleLogout = () => {
@@ -49,15 +49,10 @@ function Navbar() {
           </Link>
         </div>
 
-        {/* --- ตรงกลาง: เมนูหลักและหมวดหมู่ (จัดระเบียบแถวเดียว) --- */}
+        {/* --- ตรงกลาง: เมนู --- */}
         <div className={`nav-center ${showMobileMenu ? 'active' : ''}`}>
           <div className="nav-links">
-            {/* เมนู ข่าว ลิงก์ไปที่หน้า news รวม */}
-            <Link to="/news" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>
-              ข่าว
-            </Link>
-
-            {/* วนลูปหมวดหมู่ที่เหลือ */}
+            <Link to="/news" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>ข่าว</Link>
             {categories.map((cat, index) => (
               <Link 
                 key={index} 
@@ -68,10 +63,7 @@ function Navbar() {
                 {cat}
               </Link>
             ))}
-
-            <Link to="/library" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>
-              ห้องสมุด
-            </Link>
+            <Link to="/library" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>ห้องสมุด</Link>
           </div>
         </div>
 
@@ -97,18 +89,44 @@ function Navbar() {
           {user ? (
             <div className="user-profile-wrapper">
               <div className="profile-trigger" onClick={() => setShowUserMenu(!showUserMenu)}>
-                {user.profileImage ? (
-                  <img src={user.profileImage} alt="User" onError={(e) => e.target.src = defaultAvatar} />
+                {/* ตรวจสอบทั้ง user.profileImage (จาก DB) และ user.image (เผื่อบางที่เก็บคนละชื่อ) 
+                  ใส่ Query String เพื่อป้องกัน Browser Cache รูปเก่า
+                */}
+                {(user.profileImage || user.image) ? (
+                  <img 
+                    src={user.profileImage || user.image} 
+                    alt="Profile" 
+                    key={user.profileImage || user.image} // ใช้ key เพื่อให้ React บังคับ re-render เมื่อ URL เปลี่ยน
+                    onError={(e) => {
+                      e.target.onerror = null; 
+                      e.target.src = defaultAvatar;
+                    }} 
+                  />
                 ) : (
-                  <IoPerson />
+                  <div className="default-avatar-placeholder">
+                    <IoPerson />
+                  </div>
                 )}
               </div>
+              
               {showUserMenu && (
                 <div className="user-dropdown">
-                  <p className="dropdown-user-name">{user.fullName}</p>
-                  <Link to="/profile" className="dropdown-link" onClick={() => setShowUserMenu(false)}>โปรไฟล์</Link>
-                  {user.role === 'admin' && <Link to="/admin" className="dropdown-link" onClick={() => setShowUserMenu(false)}>แอดมิน</Link>}
-                  <button onClick={handleLogout} className="logout-button">ออกจากระบบ</button>
+                  <div className="dropdown-header">
+                    <p className="dropdown-user-name">{user.fullName || user.username}</p>
+                    <span className="dropdown-user-email">{user.email}</span>
+                  </div>
+                  <hr />
+                  <Link to="/profile" className="dropdown-link" onClick={() => setShowUserMenu(false)}>
+                    <IoPerson /> โปรไฟล์
+                  </Link>
+                  {user.role === 'admin' && (
+                    <Link to="/admin" className="dropdown-link" onClick={() => setShowUserMenu(false)}>
+                      <IoSettingsOutline /> แอดมิน
+                    </Link>
+                  )}
+                  <button onClick={handleLogout} className="logout-button">
+                    <IoLogOut /> ออกจากระบบ
+                  </button>
                 </div>
               )}
             </div>
