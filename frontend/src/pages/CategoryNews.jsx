@@ -11,36 +11,37 @@ function CategoryNews() {
   const [dbNews, setDbNews] = useState([]); // เก็บข่าวที่ลงเองจาก DB
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchCategoryNews = async () => {
       try {
         setLoading(true);
-        // ดึงข่าวทั้งหมดจาก DB มาตรวจสอบ
         const response = await api.get('/news');
-        console.log("ข้อมูลดิบจาก DB:", response.data);
-
+        
         if (response.data && Array.isArray(response.data)) {
           const filtered = response.data.filter(news => {
-            // ดึงค่าหมวดหมู่จากทุกความเป็นไปได้ (category หรือ categories)
-            const dbCat = (news.categories || news.category || "").toString().trim();
-            const urlCat = (categoryName || "").toString().trim();
+            // ดึงชื่อหมวดหมู่จาก Object (ถ้า Backend ทำ Populate มาให้)
+            // หรือตรวจสอบว่ามีฟิลด์ชื่อ 'categoryName' หรือไม่
+            const dbCategoryName = news.category?.name || news.categories?.name || news.category;
             
-            // ตรวจสอบว่าคำตรงกันหรือไม่
+            // ล้างค่าช่องว่างเพื่อความแม่นยำ
+            const dbCat = String(dbCategoryName).trim().toLowerCase();
+            const urlCat = String(categoryName).trim().toLowerCase();
+
+            // กรณีพิเศษ: ถ้า DB เป็น ID แต่เราต้องการหาด้วยชื่อ 
+            // เราจะเช็คเทียบกับคำที่ Backend อาจจะส่งมาให้ในตัวแปรอื่น
             return dbCat === urlCat;
           });
-
-          console.log("ข่าวที่กรองได้จาก DB:", filtered);
           setDbNews(filtered);
         }
       } catch (err) {
-        console.error("เกิดข้อผิดพลาดในการดึงข้อมูล:", err);
+        console.error("API Error:", err);
       } finally {
         setLoading(false);
       }
     };
     fetchCategoryNews();
   }, [categoryName]);
-  
+
   // กรองข่าวจากไฟล์ Local (allNews) เผื่อไว้กรณีไม่มีใน DB
   const localFiltered = allNews.filter(news => news.category === categoryName);
 
