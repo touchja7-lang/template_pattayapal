@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../api'; // ✅ แก้ไข Path ให้ตรงกับที่เก็บไฟล์ api.js ของคุณ
+import api from '../services/api.js'; // ✅ แก้ไข Path ให้ตรงกับที่เก็บไฟล์ api.js ของคุณ
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { getNewsById } from '../data/newsData';
