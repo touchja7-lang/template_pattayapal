@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios'; // ✅ ต้องติดตั้ง npm install axios
+import api from '../api'; // ✅ เปลี่ยนมาใช้ไฟล์ api กลาง
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CommentSection from '../components/CommentSection';
@@ -19,8 +18,7 @@ function NewsDetail() {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        // 1. พยายามดึงข้อมูลจาก Backend API ก่อน (เพื่อให้ได้ _id ของ MongoDB)
-        // แก้ URL ให้ตรงกับ port ของ backend คุณ (ปกติคือ 5000)
+        // ✅ เรียกผ่าน api instance (จะไป Render อัตโนมัติเมื่ออยู่บน Vercel)
         const response = await api.get(`/news/${id}`);
         
         if (response.data) {
@@ -28,9 +26,7 @@ function NewsDetail() {
           setIsFromDB(true);
         }
       } catch (err) {
-        console.warn("ไม่สามารถดึงข้อมูลจาก API ได้ กำลังใช้ข้อมูลจากไฟล์ Local...");
-        
-        // 2. ถ้า API พัง/หาไม่เจอ ให้ดึงจากไฟล์ newsData.js แทน (แบบเดิมที่คุณใช้)
+        console.warn("API Error: Falling back to local data...");
         const localNews = getNewsById(id);
         setNews(localNews);
         setIsFromDB(false);
@@ -40,7 +36,7 @@ function NewsDetail() {
     };
 
     fetchNews();
-    window.scrollTo(0, 0); // เลื่อนขึ้นบนสุดเมื่อเปลี่ยนหน้า
+    window.scrollTo(0, 0);
   }, [id]);
 
   if (loading) return <div className="loading-state">กำลังโหลดเนื้อหา...</div>;
@@ -58,27 +54,21 @@ function NewsDetail() {
     );
   }
 
-  // ข่าวที่เกี่ยวข้อง (กรองจากไฟล์ local)
-  const relatedNews = allNews
-    .filter(item => item.category === news.category && (item._id !== news._id && item.id !== news.id))
-    .slice(0, 3);
+  // รองรับ category ทั้งแบบ String และ Object
+  const categoryName = typeof news.category === 'object' ? 'ข่าวทั่วไป' : news.category;
 
   return (
     <div className='news-detail-container'>
       <Navbar />
-      
       <div className="news-detail-content">
         <div className="news-detail-wrapper">
-          {/* Breadcrumb */}
           <div className="breadcrumb">
             <Link to="/">หน้าแรก</Link>
             <span> / </span>
-            <span>{news.category}</span>
-            <span> / </span>
-            <span>{isFromDB ? 'Database' : 'Local File'}</span>
+            <span>{categoryName}</span>
           </div>
 
-          <div className="news-category-badge">{news.category}</div>
+          <div className="news-category-badge">{categoryName}</div>
           <h1 className="news-detail-title">{news.title}</h1>
 
           <div className="news-meta">
@@ -99,41 +89,13 @@ function NewsDetail() {
             dangerouslySetInnerHTML={{ __html: news.content }}
           />
 
-          <div className="news-tags">
-            <span className="tag">#{news.category}</span>
-          </div>
-
-          {/* 🚩 จุดสำคัญที่สุด: ส่วนคอมเมนต์ */}
-          {/* หากข้อมูลมาจาก DB จะส่ง news._id ไป แต่ถ้ามาจากไฟล์ local จะส่ง id ไป */}
           <div className="comment-divider">
              <hr />
+             {/* ใช้ news._id จาก DB ถ้าไม่มีให้ใช้ id จาก params */}
              <CommentSection newsId={news._id || id} />
           </div>
-
-          {/* ข่าวที่เกี่ยวข้อง */}
-          {relatedNews.length > 0 && (
-            <div className="related-news-section">
-              <h3 className="related-news-title">ข่าวที่เกี่ยวข้อง</h3>
-              <div className="related-news-grid">
-                {relatedNews.map((item) => (
-                  <Link 
-                    to={`/news/${item._id || item.id}`} 
-                    key={item._id || item.id} 
-                    className="related-news-card"
-                  >
-                    <img src={item.image || item.thumbnail} alt={item.title} />
-                    <div className="related-news-info">
-                      <span className="related-category">{item.category}</span>
-                      <h4>{item.title}</h4>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
-
       <Footer />
     </div>
   );
