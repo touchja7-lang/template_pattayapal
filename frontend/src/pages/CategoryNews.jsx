@@ -2,35 +2,44 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import api from '../services/api'; // ✅ เรียกใช้ api เพื่อคุยกับ MongoDB
+import api from '../services/api'; 
 import { allNews } from '../data/newsData';
 import '../css/News.css';
 
 function CategoryNews() {
   const { categoryName } = useParams();
-  const [dbNews, setDbNews] = useState([]); // เก็บข่าวที่ลงเองจาก DB
+  const [dbNews, setDbNews] = useState([]); 
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchCategoryNews = async () => {
       try {
         setLoading(true);
+        // ดึงข่าวทั้งหมดจาก DB
         const response = await api.get('/news');
         
         if (response.data && Array.isArray(response.data)) {
           const filtered = response.data.filter(news => {
-            // ดึงชื่อหมวดหมู่จาก Object (ถ้า Backend ทำ Populate มาให้)
-            // หรือตรวจสอบว่ามีฟิลด์ชื่อ 'categoryName' หรือไม่
-            const dbCategoryName = news.category?.name || news.categories?.name || news.category;
+            // ดึงค่าหมวดหมู่มาเช็ค (รองรับทั้งชื่อ field 'category' และ 'categories')
+            const categoryData = news.category || news.categories;
             
-            // ล้างค่าช่องว่างเพื่อความแม่นยำ
-            const dbCat = String(dbCategoryName).trim().toLowerCase();
-            const urlCat = String(categoryName).trim().toLowerCase();
+            let dbCatName = "";
+            
+            if (typeof categoryData === 'object' && categoryData !== null) {
+              // กรณี DB เป็น Object (มีการ Populate มาจาก Backend)
+              dbCatName = categoryData.name || categoryData.title || "";
+            } else {
+              // กรณี DB เป็น String (ชื่อหมวดหมู่โดยตรง)
+              dbCatName = String(categoryData);
+            }
 
-            // กรณีพิเศษ: ถ้า DB เป็น ID แต่เราต้องการหาด้วยชื่อ 
-            // เราจะเช็คเทียบกับคำที่ Backend อาจจะส่งมาให้ในตัวแปรอื่น
-            return dbCat === urlCat;
+            // ทำความสะอาดข้อความเพื่อเปรียบเทียบ (ลบช่องว่าง/ตัวเล็กตัวใหญ่)
+            const cleanDbCat = dbCatName.trim().toLowerCase();
+            const cleanUrlCat = String(categoryName).trim().toLowerCase();
+
+            return cleanDbCat === cleanUrlCat;
           });
+          
           setDbNews(filtered);
         }
       } catch (err) {
@@ -40,12 +49,15 @@ useEffect(() => {
       }
     };
     fetchCategoryNews();
+    window.scrollTo(0, 0);
   }, [categoryName]);
 
-  // กรองข่าวจากไฟล์ Local (allNews) เผื่อไว้กรณีไม่มีใน DB
-  const localFiltered = allNews.filter(news => news.category === categoryName);
+  // กรองข่าวจากไฟล์ Local (allNews)
+  const localFiltered = allNews.filter(news => 
+    String(news.category).trim().toLowerCase() === String(categoryName).trim().toLowerCase()
+  );
 
-  // รวมข่าวจากทั้ง 2 แหล่งเข้าด้วยกัน
+  // รวมข่าว: ข่าวจาก Database ที่ลงเองจะอยู่ด้านบน
   const combinedNews = [...dbNews, ...localFiltered];
 
   return (
@@ -69,18 +81,23 @@ useEffect(() => {
             กำลังรวบรวมข่าวสารในหมวดหมู่ {categoryName}...
           </div>
         ) : (
-          <div className="news-grid"> {/* ✅ ใช้ Grid เพื่อจัดให้ข่าวอยู่ด้วยกันอย่างเป็นระเบียบ */}
+          <div className="news-grid">
             {combinedNews.length > 0 ? (
               combinedNews.map((news) => (
                 <Link to={`/news/${news._id || news.id}`} key={news._id || news.id} className="news-card">
                   <div className="news-card-image">
-                    <img src={news.image} alt={news.title} />
-                    <span className="news-card-category">{news.category}</span>
+                    <img src={news.image || news.img || 'https://via.placeholder.com/400x250?text=No+Image'} alt={news.title} />
+                    {/* ✅ แก้ไขการแสดงผลชื่อหมวดหมู่ให้รองรับ Object */}
+                    <span className="news-card-category">
+                      {typeof (news.category || news.categories) === 'object' 
+                        ? (news.category?.name || news.categories?.name || categoryName) 
+                        : (news.category || news.categories)}
+                    </span>
                   </div>
                   <div className="news-card-content">
                     <h3 className="news-card-title">{news.title}</h3>
                     <div className="news-card-meta">
-                      <span>🕒 {news.time || new Date(news.createdAt).toLocaleDateString('th-TH')}</span>
+                      <span>🕒 {news.createdAt ? new Date(news.createdAt).toLocaleDateString('th-TH') : (news.time || 'เมื่อเร็วๆ นี้')}</span>
                       <span>👁️ {news.views || 0} ครั้ง</span>
                     </div>
                   </div>
@@ -89,7 +106,7 @@ useEffect(() => {
             ) : (
               <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '5rem' }}>
                 <p style={{ fontSize: '1.2rem', color: '#999' }}>ยังไม่มีข่าวในหมวดหมู่ "{categoryName}"</p>
-                <Link to="/news" className="back-to-library" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
+                <Link to="/news" className="back-link" style={{ marginTop: '1.5rem', display: 'inline-block' }}>
                   ดูข่าวสารอื่นๆ ทั้งหมด
                 </Link>
               </div>
