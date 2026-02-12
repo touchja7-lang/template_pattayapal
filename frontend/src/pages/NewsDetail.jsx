@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../api';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios'; // ✅ ต้องติดตั้ง npm install axios
 import Navbar from '../components/Navbar';
@@ -20,7 +21,7 @@ function NewsDetail() {
         setLoading(true);
         // 1. พยายามดึงข้อมูลจาก Backend API ก่อน (เพื่อให้ได้ _id ของ MongoDB)
         // แก้ URL ให้ตรงกับ port ของ backend คุณ (ปกติคือ 5000)
-        const response = await axios.get(`http://localhost:5000/api/news/${id}`);
+        const response = await api.get(`/news/${id}`);
         
         if (response.data) {
           setNews(response.data);
