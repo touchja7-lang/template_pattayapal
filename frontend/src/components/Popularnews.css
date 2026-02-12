@@ -107,3 +107,20 @@
     gap: 8px;
   }
 }
+
+/* ล้างค่าเริ่มต้นของ Link */
+.category-link-wrapper, .popular-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform 0.2s;
+}
+
+/* เอฟเฟกต์เวลาเอาเมาส์ไปชี้ (Optional) */
+.category-link-wrapper:hover {
+    transform: translateX(5px); /* เลื่อนขวานิดๆ */
+}
+
+.popular-item-link:hover .item-title {
+    color: #004a7c; /* เปลี่ยนสีหัวข้อเวลา hover */
+}

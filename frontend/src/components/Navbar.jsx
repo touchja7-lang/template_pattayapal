@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import './Navbar.css';
-import { HiOutlineNewspaper } from "react-icons/hi";
-import { MdOutlineLocalLibrary } from "react-icons/md";
-import { IoPerson, IoSettingsOutline, IoMenu, IoClose } from "react-icons/io5";
+import { IoPerson, IoSettingsOutline, IoMenu, IoClose, IoLogOut } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
-import { IoLogOut } from "react-icons/io5";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,6 +14,9 @@ function Navbar() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/616/616408.png';
+
+  // รายการหมวดหมู่ (เอาคำว่า "ข่าว" ออกจากลิสต์นี้เพื่อไปแยก Link ต่างหาก)
+  const categories = ["กีฬา", "บันเทิง", "เทคโนโลยี", "เศรษฐกิจ"];
 
   const handleLogout = () => {
     logout();
@@ -36,100 +36,89 @@ function Navbar() {
   };
 
   return (
-    <section className='navbar-container'>
-        <div className="navbar">
-            <div className="nav-left">
-                <button className="mobile-menu-btn" onClick={() => setShowMobileMenu(!showMobileMenu)}>
-                    {showMobileMenu ? <IoClose /> : <IoMenu />}
-                </button>
-                <Link to="/" className="logo">
-                    <p>Pattaya Community</p>
-                </Link>
-            </div>
-
-            <div className={`nav-center ${showMobileMenu ? 'active' : ''}`}>
-                <div className="icons-menu-container">
-                  <Link to="/news" className='icons-menu' onClick={() => setShowMobileMenu(false)}>
-                    <HiOutlineNewspaper /> <span>ข่าวสาร</span>
-                  </Link>
-                  <Link to="/library" className='icons-menu' onClick={() => setShowMobileMenu(false)}>
-                    <MdOutlineLocalLibrary /> <span>ห้องสมุด</span>
-                  </Link>
-                </div>
-            </div>
-            
-            <div className="icons-other-container">
-                <div className="search-wrapper">
-                    <p className='icons-other search-trigger' onClick={() => setShowSearch(!showSearch)}>
-                        <CiSearch />
-                    </p>
-                    {showSearch && (
-                        <form onSubmit={handleSearch} className="search-dropdown">
-                            <input 
-                                type="text" 
-                                placeholder="ค้นหาข่าวสาร..." 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                autoFocus
-                            />
-                            <button type="submit">ค้นหา</button>
-                        </form>
-                    )}
-                </div>
-
-                {user ? (
-                  <div className="user-menu">
-                    <div 
-                      className="icons-other user-icon" 
-                      onClick={() => setShowUserMenu(!showUserMenu)}
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        overflow: 'hidden',
-                        padding: user.profileImage ? '0' : ''
-                      }}
-                    >
-                      {user.profileImage ? (
-                        <img 
-                          src={user.profileImage} 
-                          alt="Profile" 
-                          style={{ 
-                            width: '100%', 
-                            height: '100%', 
-                            objectFit: 'cover',
-                            borderRadius: '50%' 
-                          }}
-                          onError={(e) => { e.target.src = defaultAvatar }}
-                        />
-                      ) : (
-                        <IoPerson />
-                      )}
-                    </div>
-                    {showUserMenu && (
-                      <div className="user-dropdown">
-                        <p className="user-name">{user.fullName || 'ผู้ใช้งาน'}</p>
-                        <Link to="/profile" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                          <IoPerson /> โปรไฟล์ของฉัน
-                        </Link>
-                        {user.role === 'admin' && (
-                          <Link to="/admin" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                            <IoSettingsOutline /> จัดการระบบ
-                          </Link>
-                        )}
-                        <button onClick={handleLogout} className="logout-btn">
-                          <IoLogOut /> ออกจากระบบ
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link to="/login" className='icons-other'><IoPerson /></Link>
-                )}
-            </div>
+    <nav className='navbar-main-container'>
+      <div className="navbar-content">
+        
+        {/* --- ฝั่งซ้าย: Logo --- */}
+        <div className="nav-left">
+          <button className="mobile-menu-btn" onClick={() => setShowMobileMenu(!showMobileMenu)}>
+            {showMobileMenu ? <IoClose /> : <IoMenu />}
+          </button>
+          <Link to="/" className="logo">
+            <p>Pattaya<span>Community</span></p>
+          </Link>
         </div>
-    </section>
-  )
+
+        {/* --- ตรงกลาง: เมนูหลักและหมวดหมู่ (จัดระเบียบแถวเดียว) --- */}
+        <div className={`nav-center ${showMobileMenu ? 'active' : ''}`}>
+          <div className="nav-links">
+            {/* เมนู ข่าว ลิงก์ไปที่หน้า news รวม */}
+            <Link to="/news" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>
+              ข่าว
+            </Link>
+
+            {/* วนลูปหมวดหมู่ที่เหลือ */}
+            {categories.map((cat, index) => (
+              <Link 
+                key={index} 
+                to={`/news/category/${encodeURIComponent(cat)}`} 
+                className="nav-link-item"
+                onClick={() => setShowMobileMenu(false)}
+              >
+                {cat}
+              </Link>
+            ))}
+
+            <Link to="/library" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>
+              ห้องสมุด
+            </Link>
+          </div>
+        </div>
+
+        {/* --- ฝั่งขวา: ค้นหา & โปรไฟล์ --- */}
+        <div className="nav-right">
+          <div className="search-box">
+            <button className='icon-btn' onClick={() => setShowSearch(!showSearch)}>
+              <CiSearch />
+            </button>
+            {showSearch && (
+              <form onSubmit={handleSearch} className="search-input-wrapper">
+                <input
+                  type="text"
+                  placeholder="ค้นหาข่าว..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
+                />
+              </form>
+            )}
+          </div>
+
+          {user ? (
+            <div className="user-profile-wrapper">
+              <div className="profile-trigger" onClick={() => setShowUserMenu(!showUserMenu)}>
+                {user.profileImage ? (
+                  <img src={user.profileImage} alt="User" onError={(e) => e.target.src = defaultAvatar} />
+                ) : (
+                  <IoPerson />
+                )}
+              </div>
+              {showUserMenu && (
+                <div className="user-dropdown">
+                  <p className="dropdown-user-name">{user.fullName}</p>
+                  <Link to="/profile" className="dropdown-link" onClick={() => setShowUserMenu(false)}>โปรไฟล์</Link>
+                  {user.role === 'admin' && <Link to="/admin" className="dropdown-link" onClick={() => setShowUserMenu(false)}>แอดมิน</Link>}
+                  <button onClick={handleLogout} className="logout-button">ออกจากระบบ</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link to="/login" className='icon-btn'><IoPerson /></Link>
+          )}
+        </div>
+      </div>
+    </nav>
+  );
 }
 
 export default Navbar;
