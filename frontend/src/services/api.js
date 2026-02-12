@@ -22,7 +22,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// --- เพิ่มส่วนการ Export ด้านล่างนี้เพื่อให้ไฟล์อื่นเรียกใช้ได้ ---
+// --- ส่วนการ Export สำหรับระบบทั้งหมด ---
 
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
@@ -39,6 +39,13 @@ export const newsAPI = {
 
 export const categoryAPI = {
   getAll: () => api.get('/categories'),
+};
+
+// 🚩 เพิ่มส่วนนี้เข้าไปเพื่อให้ CommentSection.jsx ทำงานได้
+export const commentAPI = {
+  getByNewsId: (newsId) => api.get(`/comments/news/${newsId}`),
+  create: (data) => api.post('/comments', data),
+  delete: (id) => api.delete(`/comments/${id}`),
 };
 
 export default api;
