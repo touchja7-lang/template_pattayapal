@@ -112,7 +112,7 @@ export const allNews = [
   },
   {
     _id: '698d697c7f9cc4381bc340b2',
-    id: '698d697c7f9cc4381bc340b2',
+    id: '11',
     image: 'https://images.unsplash.com/photo-1519046904884-53103b34b206',
     category: 'เพลง',
     title: 'บทความพิเศษ: 10 ข้อควรรู้เกี่ยวกับสารพิษอันตราย',
