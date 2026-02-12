@@ -25,6 +25,16 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  // --- เพิ่มฟิลด์รูปภาพตรงนี้ ---
+  profileImage: {
+    type: String,
+    default: 'https://cdn-icons-png.flaticon.com/512/616/616408.png' // รูปเริ่มต้น
+  },
+  backgroundImage: {
+    type: String,
+    default: ''
+  },
+  // -------------------------
   role: {
     type: String,
     enum: ['user', 'admin'],
