@@ -15,20 +15,21 @@ function CategoryNews() {
     const fetchCategoryNews = async () => {
       try {
         setLoading(true);
-        console.log("กำลังเรียก API ไปที่หมวดหมู่:", categoryName);
-
+        // ดึงข่าวทั้งหมดจาก DB มาตรวจสอบ
         const response = await api.get('/news');
-        console.log("ข้อมูลทั้งหมดที่ดึงมาจาก DB:", response.data); // ดูใน Console ว่ามีข้อมูลไหม
+        console.log("ข้อมูลดิบจาก DB:", response.data);
 
         if (response.data && Array.isArray(response.data)) {
           const filtered = response.data.filter(news => {
-            // เช็คว่าชื่อหมวดหมู่ตรงกันไหม (แบบไม่สนช่องว่าง)
-            const dbCat = news.category?.toString().trim();
-            const urlCat = categoryName?.toString().trim();
+            // ดึงค่าหมวดหมู่จากทุกความเป็นไปได้ (category หรือ categories)
+            const dbCat = (news.categories || news.category || "").toString().trim();
+            const urlCat = (categoryName || "").toString().trim();
+            
+            // ตรวจสอบว่าคำตรงกันหรือไม่
             return dbCat === urlCat;
           });
 
-          console.log("ข่าวที่กรองได้:", filtered);
+          console.log("ข่าวที่กรองได้จาก DB:", filtered);
           setDbNews(filtered);
         }
       } catch (err) {
@@ -39,6 +40,7 @@ function CategoryNews() {
     };
     fetchCategoryNews();
   }, [categoryName]);
+  
   // กรองข่าวจากไฟล์ Local (allNews) เผื่อไว้กรณีไม่มีใน DB
   const localFiltered = allNews.filter(news => news.category === categoryName);
 
