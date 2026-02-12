@@ -11,12 +11,9 @@ connectDB();
 
 // Middleware
 app.use(cors({
-  // ตัด / ตัวสุดท้ายออก และรองรับทั้ง Production และ Localhost
-  origin: [
-    'https://template-pattayapal-u6n3.vercel.app', 
-  ],
-  credentials: true, // อนุญาตให้ส่ง Cookie/Token
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: 'https://template-pattayapal-u6n3.vercel.app', // URL หน้าเว็บ Vercel ของคุณ
+  credentials: true, // ต้องเป็น true เหมือนกับหน้าบ้าน
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
@@ -32,7 +29,6 @@ app.use('/api/categories', require('./routes/category'));
 app.use('/api/news', require('./routes/news'));
 app.use('/api/comments', require('./routes/comment'));
 
-app.options('(.*)', cors());
 
 // Health check
 app.get('/api/health', (req, res) => {
