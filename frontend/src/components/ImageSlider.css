@@ -1,13 +1,19 @@
 /* Container หลักของ Slider */
 .slider-container {
-    width: 92%;
-    max-width: 1100px;
+    width: 92%; /* ไม่ชิดขอบจอ เหลือพื้นที่หายใจข้างละ 4% */
+    max-width: 1200px; /* ขยายกว้างขึ้นเล็กน้อยเพื่อความสวยงาม */
     margin: 30px auto;
     border-radius: 24px;
-    overflow: hidden;
+    overflow: hidden; /* บังคับให้รูปที่เกินออกมาถูกตัดตามความโค้งมน */
     position: relative;
     box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-    background: #e0e0e0;
+    background: #000; /* ใช้สีดำเป็นพื้นหลังเผื่อรูประหว่างโหลด */
+}
+
+/* ล้างค่าเริ่มต้นของ Swiper เพื่อให้เต็มกรอบ */
+.mySwiper {
+    width: 100%;
+    height: 100%;
 }
 
 .slide-content {
@@ -16,73 +22,128 @@
     display: block;
     position: relative;
     width: 100%;
-    height: 550px; /* ความสูงสำหรับ Desktop */
+    /* 🟢 จุดสำคัญ: บังคับความสูงมาตรฐานเพื่อให้รูปมีพื้นที่แผ่เต็ม */
+    height: 550px; 
 }
 
+/* 🟢 จุดสำคัญ: บังคับรูปภาพให้เต็มกรอบแบบ 100% */
 .slide-content img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* กันรูปเบี้ยว */
-    transition: transform 0.8s ease;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover; /* ขยายรูปให้เต็มพื้นที่โดยไม่เสียสัดส่วน */
+    object-position: center; /* จัดจุดกลางภาพให้อยู่กึ่งกลางเสมอ */
+    display: block;
+    transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 }
 
+/* เอฟเฟกต์ซูมเบาๆ เวลาเอาเมาส์ไปชี้ */
 .slide-content:hover img {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
-/* Overlay ไล่เฉดสีดำเพื่อให้ตัวหนังสือสีขาวเด่น */
+/* Overlay ไล่เฉดสีดำ (Gradient) ให้ลึกขึ้นเพื่อให้ตัวหนังสือสีขาวลอยเด่น */
 .slide-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 80px 40px 50px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+    padding: 100px 40px 50px; /* เพิ่มพื้นที่ด้านบนให้ Gradient เนียนขึ้น */
+    background: linear-gradient(to top, 
+        rgba(0,0,0,0.95) 0%, 
+        rgba(0,0,0,0.6) 40%, 
+        rgba(0,0,0,0.2) 70%, 
+        transparent 100%);
     color: white;
     text-align: left;
+    z-index: 2;
 }
 
+/* ป้าย Tag หมวดหมู่ */
 .category-tag {
     background: #004d40;
     color: #ffffff;
-    padding: 6px 16px;
+    padding: 6px 18px;
     border-radius: 100px;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
+    letter-spacing: 1.2px;
+    margin-bottom: 18px;
     display: inline-block;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
+/* ชื่อข่าวใน Slider */
 .slide-title {
     margin: 0 0 15px;
-    font-size: clamp(1.5rem, 4vw, 2.5rem);
-    font-weight: 700;
-    line-height: 1.2;
-    text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    font-size: clamp(1.6rem, 5vw, 2.6rem); /* ยืดหยุ่นตามขนาดหน้าจอ */
+    font-weight: 800;
+    line-height: 1.1;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    max-width: 90%; /* ไม่ให้ตัวหนังสือยาวชิดขอบเกินไป */
 }
 
+/* ข้อมูลเสริม (วันที่, ยอดดู) */
 .slide-meta {
     display: flex;
+    align-items: center;
     gap: 20px;
     font-size: 0.85rem;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
-/* ปุ่ม Swiper ปรับแต่งใหม่ */
+.slide-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ปุ่ม Swiper Navigation (ลูกศรซ้าย-ขวา) */
 .swiper-button-next, .swiper-button-prev {
     background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    width: 50px;
-    height: 50px;
+    backdrop-filter: blur(10px);
+    width: 55px;
+    height: 55px;
     border-radius: 50%;
     color: white !important;
+    transition: all 0.3s ease;
 }
 
+.swiper-button-next:hover, .swiper-button-prev:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+.swiper-button-next:after, .swiper-button-prev:after {
+    font-size: 20px !important;
+    font-weight: bold;
+}
+
+/* --- Responsive สำหรับหน้าจอขนาดกลาง (Tablet) --- */
+@media (max-width: 1024px) {
+    .slide-content { height: 450px; }
+    .slide-title { font-size: 2rem; }
+}
+
+/* --- Responsive สำหรับมือถือ --- */
 @media (max-width: 768px) {
-    .slider-container { width: 95%; margin: 20px auto; border-radius: 16px; }
-    .slide-content { height: 380px; }
-    .slide-overlay { padding: 40px 20px 40px; }
-    .swiper-button-next, .swiper-button-prev { display: none !important; }
+    .slider-container { 
+        width: 94%; 
+        margin: 15px auto; 
+        border-radius: 18px; 
+    }
+    .slide-content { 
+        height: 320px; /* ความสูงที่พอเหมาะสำหรับมือถือ */
+    }
+    .slide-overlay { 
+        padding: 40px 20px 40px; 
+    }
+    .slide-title { 
+        font-size: 1.4rem; 
+        line-height: 1.3;
+    }
+    /* ซ่อนปุ่มลูกศรในมือถือเพื่อให้กดง่ายขึ้น (ใช้นิ้วปัดแทน) */
+    .swiper-button-next, .swiper-button-prev { 
+        display: none !important; 
+    }
 }
