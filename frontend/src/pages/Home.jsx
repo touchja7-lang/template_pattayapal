@@ -13,7 +13,6 @@ function Home() {
             <Navbar />
             <ImageSlider />
             <NewsGrid />
-            <LibraryCard />
             <PopularSection />
             <Footer />
         </div>

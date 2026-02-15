@@ -10,15 +10,15 @@ const Footer = () => {
         {/* คอลัมน์ที่ 1: โลโก้และรายละเอียด */}
         <div className="footer-column brand-info">
           <div className="footer-logo">
-             <div className="logo-icon">P</div>
-             <h2>Pattayapal</h2>
+             <div className="logo-icon">A</div>
+             <h2>Athipburapa</h2>
           </div>
           <p className="brand-desc">
             แหล่งข่าวสารที่เชื่อถือได้ ครอบคลุมทุกมิติ อัปเดตข่าวตลอด 24 ชั่วโมง 
             พร้อมส่งมอบข้อมูลที่ถูกต้อง รวดเร็ว และทันสมัย
           </p>
           <div className="social-links">
-            <a href="#"><IoLogoFacebook /></a>
+            <a href="https://web.facebook.com/Athipburapa.news?locale=th_TH"><IoLogoFacebook /></a>
             <a href="#"><IoLogoTiktok /></a>
             <a href="#"><IoLogoInstagram /></a>
             <a href="#"><IoLogoYoutube /></a>
@@ -64,7 +64,7 @@ const Footer = () => {
       </div>
 
       <div className="footer-bottom">
-        <p>© 2026 Pattayapal - เว็บไซต์ข่าวสารออนไลน์ สงวนลิขสิทธิ์.</p>
+        <p>© 2026 Athipburapa - เว็บไซต์ข่าวสารออนไลน์ สงวนลิขสิทธิ์.</p>
       </div>
     </footer>
   );

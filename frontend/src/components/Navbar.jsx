@@ -13,7 +13,7 @@ function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // รูป Default กรณีไม่มีรูปในระบบหรือโหลดรูปไม่ขึ้น
+
   const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/616/616408.png';
 
   const categories = ["กีฬา", "บันเทิง", "เทคโนโลยี", "เศรษฐกิจ"];
@@ -45,7 +45,7 @@ function Navbar() {
             {showMobileMenu ? <IoClose /> : <IoMenu />}
           </button>
           <Link to="/" className="logo">
-            <p>Pattaya<span>Community</span></p>
+            <p>Athip<span>burapa</span></p>
           </Link>
         </div>
 
@@ -63,7 +63,7 @@ function Navbar() {
                 {cat}
               </Link>
             ))}
-            <Link to="/library" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>ห้องสมุด</Link>
+            {/* <Link to="/library" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>ห้องสมุด</Link> */}
           </div>
         </div>
 
