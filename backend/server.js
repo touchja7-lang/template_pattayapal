@@ -10,9 +10,22 @@ const app = express();
 connectDB();
 
 // Middleware
+const allowedOrigins = [
+  'https://template-pattayapal-u6n3.vercel.app',
+  'http://localhost:3000', // เพิ่ม URL ของ React ตอนรันในเครื่อง
+  'http://localhost:5173'  // (เผื่อไว้) ถ้าคุณใช้ Vite
+];
+
 app.use(cors({
-  origin: 'https://template-pattayapal-u6n3.vercel.app', // URL หน้าเว็บ Vercel ของคุณ
-  credentials: true, // ต้องเป็น true เหมือนกับหน้าบ้าน
+  origin: function (origin, callback) {
+    // อนุญาตให้เข้าถึงได้ถ้าไม่มี origin (เช่น Postman) หรืออยู่ในรายการที่กำหนด
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));

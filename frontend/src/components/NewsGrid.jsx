@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import './NewsGrid.css';
 import { HiOutlineCalendar, HiOutlineEye } from "react-icons/hi";
 import { IoArrowForward } from "react-icons/io5";
-import axios from 'axios';
+import { newsAPI } from '../services/api'; // 🟢 เปลี่ยนมาดึงผ่าน newsAPI ที่เราสร้างไว้
 
 const NewsGrid = () => {
   const [newsItems, setNewsItems] = useState([]);
@@ -14,16 +14,21 @@ const NewsGrid = () => {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        // 🟢 แก้ไข URL: ใช้พอร์ต 5000 และเส้นทาง /api/news ตาม Backend
-        // หาก Deploy แล้ว ให้เปลี่ยน localhost เป็น URL ของ Server จริง
-        const response = await axios.get('http://localhost:5000/api/news'); 
         
-        // Backend ของคุณส่งข่าวทั้งหมดมา เราจะเลือกโชว์แค่ 4 ข่าวล่าสุดที่หน้าแรก
-        setNewsItems(response.data.slice(0, 4));
+        // 🟢 เรียกใช้ผ่าน newsAPI.getAll() 
+        // ตัวนี้จะวิ่งไปที่ BASE_URL/api/news อัตโนมัติ ตามที่เราตั้งใน api.js
+        const response = await newsAPI.getAll(); 
+        
+        // ตรวจสอบว่าข้อมูลที่ได้มาเป็น Array หรือไม่ (ป้องกันกรณี Backend ส่งรูปแบบอื่นมา)
+        const data = Array.isArray(response.data) ? response.data : [];
+        
+        // เลือกแสดงเฉพาะ 4 ข่าวล่าสุด
+        setNewsItems(data.slice(0, 4));
         setLoading(false);
       } catch (err) {
         console.error("Error fetching news:", err);
-        setError("ไม่สามารถดึงข้อมูลข่าวจากฐานข้อมูลได้");
+        // แสดง Error ที่ละเอียดขึ้นใน Console เพื่อการ Debug
+        setError("ไม่สามารถดึงข้อมูลข่าวได้ กรุณาตรวจสอบการเชื่อมต่อ Backend");
         setLoading(false);
       }
     };
@@ -31,15 +36,23 @@ const NewsGrid = () => {
     fetchNews();
   }, []);
 
+  // ส่วนการแสดงผล Loading State
   if (loading) return (
     <div className="news-section">
-      <div className="loading-state">กำลังโหลดข่าวสาร...</div>
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>กำลังโหลดข่าวสารล่าสุด...</p>
+      </div>
     </div>
   );
 
+  // ส่วนการแสดงผล Error State
   if (error) return (
     <div className="news-section">
-      <div className="error-state">{error}</div>
+      <div className="error-box">
+        <p>{error}</p>
+        <button onClick={() => window.location.reload()} className="retry-btn">ลองใหม่อีกครั้ง</button>
+      </div>
     </div>
   );
 
@@ -55,13 +68,17 @@ const NewsGrid = () => {
       <div className="news-grid">
         {newsItems.length > 0 ? (
           newsItems.map((item) => (
-            // 🟢 เปลี่ยนจาก item.id เป็น item._id เพราะ MongoDB ใช้ _id
             <Link to={`/news/${item._id}`} key={item._id} className="news-card">
               <div className="card-image-container">
-                <img src={item.image} alt={item.title} className="card-image" />
-                {/* 🟢 Backend ของคุณ populate category มาเป็น Object */}
+                {/* 🟢 ใช้ภาพ placeholder หากใน DB ไม่มีรูป */}
+                <img 
+                  src={item.image || 'https://via.placeholder.com/400x225?text=No+Image'} 
+                  alt={item.title} 
+                  className="card-image" 
+                />
                 <span className="card-category">
-                  {item.category?.name || 'ข่าวทั่วไป'}
+                  {/* รองรับทั้งกรณี category เป็น String หรือ Object */}
+                  {typeof item.category === 'object' ? item.category?.name : (item.category || 'ข่าวทั่วไป')}
                 </span>
               </div>
               <div className="card-body">
@@ -69,8 +86,12 @@ const NewsGrid = () => {
                 <div className="card-footer">
                   <span className="footer-item">
                     <HiOutlineCalendar className="icon" /> 
-                    {/* แปลงวันที่จาก MongoDB (createdAt) เป็นวันที่อ่านง่าย */}
-                    {new Date(item.createdAt).toLocaleDateString('th-TH')}
+                    {/* จัดรูปแบบวันที่ให้เป็นระเบียบ */}
+                    {item.createdAt 
+                      ? new Date(item.createdAt).toLocaleDateString('th-TH', { 
+                          day: '2-digit', month: 'short', year: 'numeric' 
+                        }) 
+                      : 'ไม่ระบุวันที่'}
                   </span>
                   <span className="footer-item">
                     <HiOutlineEye className="icon" /> {item.views || 0}
@@ -80,7 +101,9 @@ const NewsGrid = () => {
             </Link>
           ))
         ) : (
-          <p className="no-news">ยังไม่มีข้อมูลข่าวในขณะนี้</p>
+          <div className="no-news-container">
+            <p className="no-news">ยังไม่มีข้อมูลข่าวในขณะนี้</p>
+          </div>
         )}
       </div>
     </div>
