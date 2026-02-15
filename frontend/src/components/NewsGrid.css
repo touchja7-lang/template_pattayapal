@@ -114,8 +114,7 @@
     line-height: 1.5;
     margin-bottom: 16px;
     /* จำกัดไว้ที่ 2 บรรทัด ถ้าเกินจะกลายเป็น ... */
-    display: -webkit-box;
-    -webkit-line-clamp: 2; 
+    display: -webkit-box; 
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
