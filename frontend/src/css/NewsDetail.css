@@ -280,3 +280,59 @@
     gap: 10px;
   }
 }
+
+/* Container รูปภาพ: ปรับให้ยืดหยุ่น */
+.news-detail-image-container {
+  width: 100%;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f0f0f0; /* สีพื้นหลังกันภาพแหว่ง */
+  display: flex;
+  justify-content: center; /* จัดรูปให้อยู่กึ่งกลางเสมอ */
+}
+
+.news-detail-image {
+  width: 100%;
+  height: auto; /* 🟢 สำคัญมาก: ให้ความสูงปรับตามสัดส่วนภาพจริง */
+  display: block;
+  /* ใน PC: ปรับให้รูปมีขนาดใหญ่ขึ้น แต่ไม่สูงจนต้องไถหน้าจอเยอะเกินไป */
+  max-height: 800px; 
+  /* 🟢 เปลี่ยนจาก cover เป็น contain หรือปรับให้เห็นครบภาพ */
+  object-fit: contain; 
+}
+
+/* ปรับปรุงโครงสร้างเนื้อหาให้อ่านง่ายขึ้นใน PC */
+.news-detail-wrapper {
+  background: white;
+  border-radius: 12px;
+  padding: 40px 60px; /* เพิ่ม padding ข้างให้ดูพรีเมียมในจอใหญ่ */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+  max-width: 1000px; /* บีบเนื้อหาให้อ่านง่ายขึ้น ไม่แผ่จนปวดคอ */
+}
+
+/* 📱 Responsive สำหรับหน้าจอมือถือ */
+@media (max-width: 768px) {
+  .news-detail-wrapper {
+    padding: 20px;
+    border-radius: 0; /* มือถือให้แผ่เต็มจอเพื่อประหยัดพื้นที่ */
+  }
+
+  .news-detail-image-container {
+    border-radius: 8px;
+    margin-bottom: 20px;
+    /* 🟢 มือถือ: ให้รูปภาพแผ่เต็มความกว้างจอ และปรับสูงตามจริง */
+    width: calc(100% + 0px); 
+  }
+
+  .news-detail-image {
+    max-height: none; /* มือถือไม่ต้องจำกัดความสูง เพื่อให้เห็นครบทั้งภาพ */
+    object-fit: contain; /* 🟢 มั่นใจว่าเห็นครบทุกคนในรูป ไม่โดน Crop หัวหรือแขนออก */
+  }
+
+  .news-detail-title {
+    font-size: 22px;
+    line-height: 1.4;
+  }
+}
