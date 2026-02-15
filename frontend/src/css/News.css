@@ -160,7 +160,7 @@ html {
     font-weight: 800;
     margin-bottom: 50px;
     background: linear-gradient(135deg, #1a1a1a, #636e72);
-    -webkit-background-clip: text;
+    /* -webkit-background-clip: text; */
     -webkit-text-fill-color: transparent;
     text-align: center;
 }
@@ -219,7 +219,7 @@ html {
     color: #1a1a1a;
     margin-bottom: 15px;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    /* -webkit-line-clamp: 2; */
     -webkit-box-orient: vertical;
     overflow: hidden;
     transition: color 0.3s ease;
