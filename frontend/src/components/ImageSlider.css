@@ -1,19 +1,13 @@
-/* Container หลักของ Slider */
+/* Container หลัก: ปรับให้ยืดหยุ่นตามหน้าจอแต่ไม่ทิ้งความสวยงาม */
 .slider-container {
-    width: 92%; /* ไม่ชิดขอบจอ เหลือพื้นที่หายใจข้างละ 4% */
-    max-width: 1200px; /* ขยายกว้างขึ้นเล็กน้อยเพื่อความสวยงาม */
-    margin: 30px auto;
-    border-radius: 24px;
-    overflow: hidden; /* บังคับให้รูปที่เกินออกมาถูกตัดตามความโค้งมน */
+    width: 92%;           /* เว้นขอบซ้าย-ขวาเล็กน้อยเพื่อให้ดูมีมิติ */
+    max-width: 1100px;
+    margin: 24px auto;    /* เพิ่มระยะห่างบน-ล่าง */
+    border-radius: 20px;
+    overflow: hidden;
     position: relative;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-    background: #000; /* ใช้สีดำเป็นพื้นหลังเผื่อรูประหว่างโหลด */
-}
-
-/* ล้างค่าเริ่มต้นของ Swiper เพื่อให้เต็มกรอบ */
-.mySwiper {
-    width: 100%;
-    height: 100%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    background: #000;     /* ใส่พื้นหลังดำกันแสงลอดเวลารูปโหลด */
 }
 
 .slide-content {
@@ -22,128 +16,143 @@
     display: block;
     position: relative;
     width: 100%;
-    /* 🟢 จุดสำคัญ: บังคับความสูงมาตรฐานเพื่อให้รูปมีพื้นที่แผ่เต็ม */
-    height: 550px; 
+    height: 550px;        /* ความสูงสำหรับ Desktop */
 }
 
-/* 🟢 จุดสำคัญ: บังคับรูปภาพให้เต็มกรอบแบบ 100% */
+/* 🟢 จุดสำคัญ: บังคับรูปภาพให้เต็มกรอบเสมอ 🟢 */
 .slide-content img {
     width: 100% !important;
     height: 100% !important;
-    object-fit: cover; /* ขยายรูปให้เต็มพื้นที่โดยไม่เสียสัดส่วน */
-    object-position: center; /* จัดจุดกลางภาพให้อยู่กึ่งกลางเสมอ */
+    object-fit: cover !important; /* บังคับรูปแผ่เต็มพื้นที่ ไม่เบี้ยว ไม่หด */
+    object-position: center;
     display: block;
-    transition: transform 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    transition: transform 0.6s ease;
 }
 
-/* เอฟเฟกต์ซูมเบาๆ เวลาเอาเมาส์ไปชี้ */
+/* เพิ่มลูกเล่นเวลาเอาเมาส์วาง */
 .slide-content:hover img {
-    transform: scale(1.08);
+    transform: scale(1.03);
 }
 
-/* Overlay ไล่เฉดสีดำ (Gradient) ให้ลึกขึ้นเพื่อให้ตัวหนังสือสีขาวลอยเด่น */
 .slide-overlay {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 100px 40px 50px; /* เพิ่มพื้นที่ด้านบนให้ Gradient เนียนขึ้น */
-    background: linear-gradient(to top, 
-        rgba(0,0,0,0.95) 0%, 
-        rgba(0,0,0,0.6) 40%, 
-        rgba(0,0,0,0.2) 70%, 
-        transparent 100%);
+    padding: 60px 40px 40px;
+    /* ปรับ Gradient ให้เข้มขึ้นด้านล่างเพื่อให้อ่านข้อความง่ายขึ้น */
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
     color: white;
     text-align: left;
     z-index: 2;
 }
 
-/* ป้าย Tag หมวดหมู่ */
 .category-tag {
-    background: #004d40;
-    color: #ffffff;
-    padding: 6px 18px;
-    border-radius: 100px;
+    background-color: #004d40;
+    color: #ffffff;      /* เปลี่ยนเป็นสีขาวเพื่อความ Contrast */
+    padding: 6px 14px;
+    border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    margin-bottom: 18px;
     display: inline-block;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    margin-bottom: 12px;
 }
 
-/* ชื่อข่าวใน Slider */
 .slide-title {
     margin: 0 0 15px;
-    font-size: clamp(1.6rem, 5vw, 2.6rem); /* ยืดหยุ่นตามขนาดหน้าจอ */
-    font-weight: 800;
-    line-height: 1.1;
-    text-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    max-width: 90%; /* ไม่ให้ตัวหนังสือยาวชิดขอบเกินไป */
+    font-size: clamp(1.4rem, 4vw, 2.2rem); /* 🟢 อักษรจะย่อ-ขยายเองตามขนาดหน้าจอ */
+    font-weight: 700;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    max-width: 90%;
 }
 
-/* ข้อมูลเสริม (วันที่, ยอดดู) */
 .slide-meta {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     font-size: 0.85rem;
     opacity: 0.9;
 }
 
-.slide-meta span {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+/* --- ระบบปุ่มควบคุม Swiper --- */
+:root {
+    --swiper-theme-color: #004d40; 
+    --swiper-navigation-size: 20px;
 }
 
-/* ปุ่ม Swiper Navigation (ลูกศรซ้าย-ขวา) */
+.swiper-pagination-bullet {
+    background: rgba(255,255,255,0.5) !important;
+    opacity: 1;
+}
+
+.swiper-pagination-bullet-active {
+    background: #ffffff !important; /* เปลี่ยนเป็นสีขาวเพื่อให้เด่นบนภาพ */
+    width: 25px;
+    border-radius: 5px;
+}
+
 .swiper-button-next, .swiper-button-prev {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(10px);
-    width: 55px;
-    height: 55px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(4px); /* เพิ่มความหรูหราแบบกระจกฝ้า */
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     color: white !important;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 
 .swiper-button-next:hover, .swiper-button-prev:hover {
-    background: rgba(255,255,255,0.3);
-    transform: scale(1.1);
+    background: rgba(255,255,255,0.4);
 }
 
-.swiper-button-next:after, .swiper-button-prev:after {
-    font-size: 20px !important;
-    font-weight: bold;
-}
-
-/* --- Responsive สำหรับหน้าจอขนาดกลาง (Tablet) --- */
+/* 📱 --- Responsive สำหรับ Tablet (หน้าจอเล็กลง) --- */
 @media (max-width: 1024px) {
-    .slide-content { height: 450px; }
-    .slide-title { font-size: 2rem; }
+    .slider-container {
+        width: 95%;
+    }
+    .slide-content {
+        height: 400px;
+    }
 }
 
-/* --- Responsive สำหรับมือถือ --- */
+/* 📱 --- Responsive สำหรับ Mobile (แสดงผลเต็มตา) --- */
 @media (max-width: 768px) {
-    .slider-container { 
-        width: 94%; 
-        margin: 15px auto; 
-        border-radius: 18px; 
+    .slider-container {
+        width: 100%;       /* ขยายเต็มหน้าจอ */
+        margin: 0;         /* ชิดขอบบน-ล่าง */
+        border-radius: 0;  /* เอาความโค้งออกเพื่อให้ภาพดูเต็ม Edge-to-Edge */
     }
-    .slide-content { 
-        height: 320px; /* ความสูงที่พอเหมาะสำหรับมือถือ */
+
+    .slide-content {
+        height: 350px;     /* ความสูงที่เหมาะสมกับสายตาคนใช้มือถือ */
     }
-    .slide-overlay { 
-        padding: 40px 20px 40px; 
+
+    .slide-overlay {
+        padding: 40px 20px 35px;
     }
-    .slide-title { 
-        font-size: 1.4rem; 
+
+    .slide-title {
+        font-size: 1.4rem;
         line-height: 1.3;
     }
-    /* ซ่อนปุ่มลูกศรในมือถือเพื่อให้กดง่ายขึ้น (ใช้นิ้วปัดแทน) */
-    .swiper-button-next, .swiper-button-prev { 
-        display: none !important; 
+
+    /* ซ่อนปุ่มลูกศรในมือถือเพื่อให้ไม่เกะกะข้อความ (ใช้วิธี Swipe แทน) */
+    .swiper-button-next, .swiper-button-prev {
+        display: none !important;
+    }
+}
+
+/* 📱 สำหรับมือถือจอเล็กเป็นพิเศษ */
+@media (max-width: 480px) {
+    .slide-content {
+        height: 280px;
+    }
+    .slide-title {
+        font-size: 1.2rem;
+    }
+    .slide-meta {
+        font-size: 0.75rem;
+        gap: 10px;
     }
 }
