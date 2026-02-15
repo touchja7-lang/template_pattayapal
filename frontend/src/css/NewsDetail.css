@@ -1,39 +1,27 @@
+/* Container หลัก */
 .news-detail-container {
   min-height: 100vh;
   background-color: #f5f5f5;
+  width: 100%;
 }
 
 .news-detail-content {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1100px; /* จำกัดความกว้างเพื่อการอ่านที่สบายตาใน PC */
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: clamp(10px, 4vw, 40px) 15px; /* ปรับ Padding ตามขนาดจอ */
 }
 
+/* กระดาษข่าว */
 .news-detail-wrapper {
   background: white;
   border-radius: 12px;
-  padding: 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Breadcrumb */
-.breadcrumb {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 20px;
-}
-
-.breadcrumb a {
-  color: #007bff;
-  text-decoration: none;
-}
-
-.breadcrumb a:hover {
-  text-decoration: underline;
-}
-
-.breadcrumb span {
-  margin: 0 5px;
+  /* ใช้ clamp เพื่อให้ระยะห่างข้างในยืดหยุ่นตามความกว้างจอ */
+  padding: clamp(15px, 5vw, 60px); 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Category Badge */
@@ -41,298 +29,101 @@
   display: inline-block;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 8px 16px;
+  padding: 6px 14px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
-/* Title */
+/* Title - ปรับขนาดอัตโนมัติ */
 .news-detail-title {
-  font-size: 32px;
+  font-size: clamp(1.4rem, 5vw, 2rem); 
   font-weight: 700;
   color: #1a1a1a;
-  line-height: 1.4;
+  line-height: 1.3;
   margin-bottom: 20px;
+  word-wrap: break-word; /* กันข้อความยาวล้นจอ */
 }
 
 /* Meta Information */
 .news-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: clamp(10px, 3vw, 20px);
   padding: 15px 0;
   border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   color: #666;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
 }
 
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.meta-icon {
-  font-size: 16px;
-  color: #667eea;
-}
-
-/* Image */
+/* 🟢 ส่วนรูปภาพไฮไลท์ (เห็นครบทุกอุปกรณ์) */
 .news-detail-image-container {
   width: 100%;
   margin-bottom: 30px;
-  border-radius: 12px;
+  border-radius: clamp(4px, 2vw, 12px);
   overflow: hidden;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
 }
 
 .news-detail-image {
   width: 100%;
-  height: auto;
-  max-height: 500px;
-  object-fit: cover;
+  height: auto; 
   display: block;
+  max-height: 750px; /* ไม่ให้สูงเกินไปใน PC */
+  object-fit: contain; /* 🟢 เห็นครบทั้งรูป ไม่โดนตัด */
 }
 
 /* Content Body */
 .news-detail-body {
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  line-height: 1.7;
   color: #333;
-  margin-bottom: 40px;
 }
 
-.news-detail-body p {
-  margin-bottom: 20px;
+/* จัดการรูปภาพที่อาจแทรกอยู่ในเนื้อหาข่าว */
+.news-detail-body img {
+  max-width: 100%;
+  height: auto !important;
+  border-radius: 8px;
+  margin: 20px 0;
 }
 
-.news-detail-body h3 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-top: 30px;
-  margin-bottom: 15px;
-}
+/* 📱 Responsive สำหรับอุปกรณ์ขนาดเล็กพิเศษ (Smallest Devices) */
+@media (max-width: 480px) {
+  .news-detail-content {
+    padding: 10px 0; /* ลดช่องว่างขอบจอให้เหลือน้อยที่สุด */
+  }
 
-.news-detail-body ul,
-.news-detail-body ol {
-  margin-left: 30px;
-  margin-bottom: 20px;
-}
-
-.news-detail-body li {
-  margin-bottom: 10px;
-}
-
-/* Tags */
-.news-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 20px 0;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 40px;
-}
-
-.tag {
-  background: #f0f0f0;
-  color: #667eea;
-  padding: 6px 14px;
-  border-radius: 15px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Related News */
-.related-news-section {
-  margin-top: 50px;
-}
-
-.related-news-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 25px;
-  padding-bottom: 15px;
-  border-bottom: 3px solid #667eea;
-}
-
-.related-news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.related-news-card {
-  display: block;
-  background: #f9f9f9;
-  border-radius: 10px;
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  text-decoration: none;
-  color: inherit;
-}
-
-.related-news-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-}
-
-.related-news-card img {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-.related-news-info {
-  padding: 15px;
-}
-
-.related-category {
-  display: inline-block;
-  background: #667eea;
-  color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  margin-bottom: 10px;
-}
-
-.related-news-info h4 {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 10px;
-  line-height: 1.4;
-  display: -webkit-box;
-  /* -webkit-line-clamp: 2; */
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.related-meta {
-  display: flex;
-  gap: 15px;
-  font-size: 12px;
-  color: #666;
-}
-
-.related-meta span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Not Found */
-.news-not-found {
-  text-align: center;
-  padding: 100px 20px;
-}
-
-.news-not-found h2 {
-  font-size: 28px;
-  color: #333;
-  margin-bottom: 30px;
-}
-
-.back-home-btn {
-  display: inline-block;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 12px 30px;
-  border-radius: 25px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: transform 0.3s ease;
-}
-
-.back-home-btn:hover {
-  transform: scale(1.05);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
   .news-detail-wrapper {
-    padding: 20px;
+    padding: 15px;
+    border-radius: 0; /* เอาขอบมนออกในมือถือเพื่อให้มีพื้นที่อ่านมากขึ้น */
   }
 
-  .news-detail-title {
-    font-size: 24px;
-  }
-
-  .news-detail-body {
-    font-size: 16px;
-  }
-
-  .news-detail-body h3 {
-    font-size: 20px;
-  }
-
-  .related-news-grid {
-    grid-template-columns: 1fr;
+  .breadcrumb {
+    font-size: 11px; /* ย่อขนาดเมนูนำทาง */
   }
 
   .news-meta {
-    font-size: 12px;
-    gap: 10px;
+    gap: 8px;
   }
 }
 
-/* Container รูปภาพ: ปรับให้ยืดหยุ่น */
-.news-detail-image-container {
-  width: 100%;
-  margin-bottom: 30px;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: #f0f0f0; /* สีพื้นหลังกันภาพแหว่ง */
-  display: flex;
-  justify-content: center; /* จัดรูปให้อยู่กึ่งกลางเสมอ */
-}
-
-.news-detail-image {
-  width: 100%;
-  height: auto; /* 🟢 สำคัญมาก: ให้ความสูงปรับตามสัดส่วนภาพจริง */
-  display: block;
-  /* ใน PC: ปรับให้รูปมีขนาดใหญ่ขึ้น แต่ไม่สูงจนต้องไถหน้าจอเยอะเกินไป */
-  max-height: 800px; 
-  /* 🟢 เปลี่ยนจาก cover เป็น contain หรือปรับให้เห็นครบภาพ */
-  object-fit: contain; 
-}
-
-/* ปรับปรุงโครงสร้างเนื้อหาให้อ่านง่ายขึ้นใน PC */
-.news-detail-wrapper {
-  background: white;
-  border-radius: 12px;
-  padding: 40px 60px; /* เพิ่ม padding ข้างให้ดูพรีเมียมในจอใหญ่ */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  margin: 0 auto;
-  max-width: 1000px; /* บีบเนื้อหาให้อ่านง่ายขึ้น ไม่แผ่จนปวดคอ */
-}
-
-/* 📱 Responsive สำหรับหน้าจอมือถือ */
+/* 📱 การจัดการหน้าจอขนาดกลาง (Tablets) */
 @media (max-width: 768px) {
-  .news-detail-wrapper {
-    padding: 20px;
-    border-radius: 0; /* มือถือให้แผ่เต็มจอเพื่อประหยัดพื้นที่ */
+  .related-news-grid {
+    grid-template-columns: 1fr; /* ข่าวที่เกี่ยวข้องเรียงยาวลงมา */
+    gap: 15px;
   }
+}
 
-  .news-detail-image-container {
-    border-radius: 8px;
-    margin-bottom: 20px;
-    /* 🟢 มือถือ: ให้รูปภาพแผ่เต็มความกว้างจอ และปรับสูงตามจริง */
-    width: calc(100% + 0px); 
-  }
-
-  .news-detail-image {
-    max-height: none; /* มือถือไม่ต้องจำกัดความสูง เพื่อให้เห็นครบทั้งภาพ */
-    object-fit: contain; /* 🟢 มั่นใจว่าเห็นครบทุกคนในรูป ไม่โดน Crop หัวหรือแขนออก */
-  }
-
-  .news-detail-title {
-    font-size: 22px;
-    line-height: 1.4;
-  }
+/* Related News Section */
+.related-news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
