@@ -109,3 +109,25 @@
         padding: 0 5px;
     }
 }
+/* ลบเส้นและขอบทั้งหมดเพื่อให้ดูพรีเมียม */
+.news-card {
+    border: none !important;      /* 🟢 ลบเส้นขอบเทา */
+    text-decoration: none !important; /* 🟢 ลบเส้นใต้ลิงก์ */
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* 🟢 ใช้เงาจางๆ แทนเส้นกั้น */
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-image-container {
+    border: none !important; /* 🟢 มั่นใจว่ากรอบรูปไม่มีเส้น */
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.card-body {
+    border: none !important; /* 🟢 มั่นใจว่าส่วนข้อความไม่มีเส้น */
+    padding: 20px;
+}
