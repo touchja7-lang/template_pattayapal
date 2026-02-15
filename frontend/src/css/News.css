@@ -1,34 +1,24 @@
+/* --- ส่วนเนื้อหาข่าว (News Detail) --- */
 .news-detail-wrapper {
     font-family: 'Kanit', sans-serif;
     position: relative;
+    background-color: #fff;
 }
 
-.back-btn {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 8px 15px;
-    border-radius: 20px;
-    text-decoration: none;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-/* ส่วนหัวภาพแบบรูปที่ส่งมา */
+/* ส่วนหัวภาพ Hero */
 .news-hero {
     position: relative;
-    height: 450px;
+    height: 500px; /* เพิ่มความสูงขึ้นเล็กน้อย */
     width: 100%;
+    background-color: #000;
 }
 
 .news-cover-img {
     width: 100%;
     height: 100%;
+    /* 🟢 แก้ไข: ใช้ cover และจัดตำแหน่งกึ่งกลางเพื่อให้เห็นภาพได้ใจความที่สุด */
     object-fit: cover;
+    object-position: center; 
 }
 
 .news-overlay {
@@ -37,323 +27,154 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to top, rgba(16, 44, 116, 0.9), rgba(0, 0, 0, 0.2));
+    /* ไล่เฉดสีให้ดูแพงและอ่านข้อความง่าย */
+    background: linear-gradient(to top, rgba(16, 44, 116, 0.95) 0%, rgba(0, 0, 0, 0.3) 50%, transparent 100%);
     display: flex;
     align-items: flex-end;
-    padding: 40px;
+    justify-content: center; /* 🟢 จัดเนื้อหาส่วนหัวให้อยู่กลาง */
+    padding: 40px 20px;
 }
 
 .news-header-content {
     max-width: 1000px;
-    margin: 0 auto;
     width: 100%;
     color: white;
 }
 
-.news-badge {
-    background: #00a859;
-    padding: 5px 15px;
-    border-radius: 5px;
-    font-size: 0.9rem;
-    margin-bottom: 15px;
-    display: inline-block;
-}
-
-.news-main-title {
-    font-size: 2rem;
-    margin: 15px 0;
-    line-height: 1.4;
-}
-
-.news-meta {
-    display: flex;
-    gap: 20px;
-    font-size: 0.9rem;
-    opacity: 0.8;
-}
-
-/* ส่วนเนื้อหา */
-.news-body-container {
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
-.news-text {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #444;
-    margin-bottom: 20px;
-    text-indent: 2em;
-}
-/* News Page Styles */
+/* --- ส่วนหน้าหลักรวมข่าว (News Page) --- */
 .news-page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 🟢 จัดหัวข้อและทุกอย่างให้อยู่กลาง */
 }
 
 .news-page-title {
-  font-size: 32px;
-  font-weight: 600;
-  margin-bottom: 2rem;
-  color: #333;
-  text-align: center;
-}
-
-.filtered-news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.news-card {
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
-  text-decoration: none;
-  color: inherit;
-}
-
-.news-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.news-card-image {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-.news-card-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.news-card-category {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  padding: 0.4rem 0.8rem;
-  background-color: rgba(51, 51, 51, 0.9);
-  color: white;
-  font-size: 13px;
-  font-weight: 500;
-  border-radius: 4px;
-}
-
-.news-card-content {
-  padding: 1.25rem;
-}
-
-.news-card-title {
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: 0.75rem;
-  color: #333;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.news-card-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #666;
-}
-
-.no-news {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 3rem;
-  font-size: 18px;
-  color: #999;
-}
-
-@media (max-width: 768px) {
-  .news-page-title {
-    font-size: 24px;
-  }
-
-  .filtered-news-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .news-card-image {
-    height: 180px;
-  }
-}
-
-/* Search Header Styles */
-.news-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.news-header .news-page-title {
-  margin-bottom: 0;
-  text-align: left;
-}
-
-.clear-search-btn {
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-.clear-search-btn:hover {
-  background-color: #e0e0e0;
-}
-
-.no-news-container {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 4rem 2rem;
-  background: #f9f9f9;
-  border-radius: 8px;
-}
-
-.reset-btn {
-  margin-top: 1rem;
-  padding: 0.8rem 2rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.loading-state {
-  text-align: center;
-  padding: 3rem;
-  font-size: 18px;
-  color: #666;
-}
-
-@media (max-width: 768px) {
-  .news-header {
-    flex-direction: column;
-    align-items: center;
+    font-size: clamp(1.8rem, 5vw, 2.2rem);
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: #1a1a1a;
     text-align: center;
-  }
-  .news-header .news-page-title {
-    text-align: center;
-  }
 }
 
-
-.news-grid {
+/* 🟢 ปรับระบบ Grid ให้จัดวางอยู่กึ่งกลางหน้าจอเสมอ 🟢 */
+.news-grid, .filtered-news-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 25px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.news-card {
-    background: white;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-    transition: transform 0.3s ease;
-}
-
-.news-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
-
-.news-page-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-.news-grid {
-    display: grid;
+    /* จัดการคอลัมน์ให้อัตโนมัติ: ถ้าจอกว้างก็เพิ่มจำนวน ถ้าจอแคบก็ลด และจัดกึ่งกลางเสมอ */
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 30px;
+    width: 100%;
+    max-width: 1100px; /* ล็อคความกว้างเพื่อให้การ์ดดูเป็นระเบียบ */
+    justify-content: center;
+    justify-items: center; /* 🟢 จัดการ์ดแต่ละใบให้อยู่กึ่งกลางช่องของมัน */
 }
 
+/* การ์ดข่าว (News Card) */
 .news-card {
     background: white;
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    transition: 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     color: inherit;
     display: flex;
     flex-direction: column;
     height: 100%;
+    width: 100%;
+    max-width: 380px; /* ป้องกันการ์ด "บวม" เกินไปเวลามีแค่ 1 ใบในมือถือ */
 }
 
 .news-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
 }
 
+/* 🟢 แก้ปัญหาภาพมาแค่ครึ่งเดียว 🟢 */
 .news-card-image {
     position: relative;
-    height: 200px;
+    width: 100%;
+    /* บังคับสัดส่วน 16:9 เพื่อให้เห็นภาพได้สัดส่วนมาตรฐาน */
+    aspect-ratio: 16 / 9; 
+    overflow: hidden;
+    background-color: #f0f0f0;
 }
 
 .news-card-image img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    /* 🟢 สำคัญมาก: cover จะทำให้รูปเต็มกรอบโดยไม่เบี้ยว */
+    object-fit: cover; 
+    object-position: center;
+    transition: transform 0.5s ease;
+}
+
+.news-card:hover .news-card-image img {
+    transform: scale(1.05); /* ซูมเบาๆ เวลาเอาเมาส์จี้ */
 }
 
 .news-card-category {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 15px;
+    left: 15px;
     background: #004a7c;
     color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
+    padding: 5px 15px;
+    border-radius: 50px;
     font-size: 11px;
+    font-weight: 600;
+    z-index: 2;
 }
 
 .news-card-content {
-    padding: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
     flex-grow: 1;
 }
 
 .news-card-title {
-    font-size: 16px;
+    font-size: 1.1rem;
     font-weight: 600;
-    line-height: 1.4;
+    line-height: 1.5;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    /* ตัดชื่อข่าวให้เหลือ 2 บรรทัดเพื่อความเท่ากัน */
+    display: -webkit-box;
+    /* -webkit-line-clamp: 2; */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .news-card-meta {
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
+    font-size: 13px;
     color: #888;
-    margin-top: auto;
-    padding-top: 10px;
-    border-top: 1px solid #f0f0f0;
+    margin-top: auto; /* ดันลงล่างสุดเสมอ */
+    padding-top: 15px;
+    border-top: 1px solid #f5f5f5;
+}
+
+/* --- Responsive ทุกอุปกรณ์ --- */
+@media (max-width: 768px) {
+    .news-page-container {
+        padding: 25px 15px;
+    }
+    
+    .news-grid, .filtered-news-grid {
+        /* ในมือถือ ให้ขยายการ์ดให้ใหญ่ขึ้นแต่อยู่กึ่งกลาง */
+        grid-template-columns: minmax(0, 400px);
+        gap: 20px;
+    }
+
+    .news-hero {
+        height: 350px;
+    }
+
+    .news-main-title {
+        font-size: 1.5rem;
+    }
 }
