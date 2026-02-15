@@ -1,120 +1,155 @@
+/* Container หลัก: ปรับ padding ให้สมดุลในทุกอุปกรณ์ */
 .news-section {
     max-width: 1200px;
     margin: 40px auto;
-    padding: 0 20px;
+    padding: 0 16px; /* ใช้ 16px มาตรฐาน mobile */
+    box-sizing: border-box;
 }
 
+/* Header: จัดการ Title และ View All ให้กึ่งกลางแนวตั้งเสมอ */
 .news-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    gap: 10px; /* กันตัวหนังสือชนกัน */
 }
 
 .section-title {
-    font-size: 1.5rem;
+    font-size: clamp(1.2rem, 5vw, 1.5rem); /* ปรับขนาดอักษรตามหน้าจออัตโนมัติ */
     font-weight: 700;
     color: #333;
+    margin: 0;
 }
 
 .view-all {
     display: flex;
     align-items: center;
-    gap: 5px;
-    color: #004d40; /* สีเขียวเข้มแบบในรูป */
+    gap: 6px;
+    color: #004d40;
     text-decoration: none;
     font-size: 0.9rem;
     font-weight: 600;
+    white-space: nowrap; /* ห้าม View All ตกบรรทัด */
+    transition: opacity 0.2s;
 }
 
-/* Grid System */
+.view-all:hover {
+    opacity: 0.7;
+}
+
+/* Grid System: ใช้ auto-fit เพื่อความยืดหยุ่นที่สูงกว่า */
 .news-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 คอลัมน์ */
+    /* ในคอม 4 คอลัมน์, ในแท็บเล็ต 2, ในมือถือ 1 โดยใช้สูตรคำนวณอัตโนมัติ */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); 
     gap: 20px;
 }
 
-/* Card Style */
+/* Card Style: แก้ปัญหาความสูงไม่เท่ากัน */
 .news-card {
     text-decoration: none;
     color: inherit;
-    display: block;
+    display: flex;
+    flex-direction: column; /* บังคับแนวตั้ง */
+    height: 100%; /* ให้การ์ดทุกใบสูงเท่ากัน */
     background: white;
-    border-radius: 12px;
+    border-radius: 16px; /* มนขึ้นตามดีไซน์สมัยใหม่ */
     overflow: hidden;
-    border: 1px solid #efefef;
-    transition: transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .news-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1);
 }
 
+/* Image Container: แก้ปัญหารูปเบี้ยวด้วย Aspect Ratio */
 .card-image-container {
     position: relative;
-    height: 180px;
+    width: 100%;
+    aspect-ratio: 16 / 9; /* บังคับสัดส่วนรูปภาพให้เป๊ะ ไม่ว่ารูปจริงจะเป็นยังไง */
+    overflow: hidden;
 }
 
 .card-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* รูปไม่ยืด ไม่เอียง */
+    transition: transform 0.5s;
 }
 
+.news-card:hover .card-image {
+    transform: scale(1.05); /* ซูมเบาๆ เวลา hover */
+}
+
+/* ป้ายหมวดหมู่: จัดตำแหน่งให้เป๊ะ */
 .card-category {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    background-color: #004d40; /* สีเขียวตามรูป */
+    top: 12px;
+    left: 12px;
+    background-color: rgba(0, 77, 64, 0.9); /* โปร่งแสงนิดๆ ให้ดูหรู */
+    backdrop-filter: blur(4px); /* เบลอหลังป้าย */
     color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-size: 0.7rem;
     font-weight: 600;
+    z-index: 1;
 }
 
 .card-body {
-    padding: 15px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* ดัน Footer ให้ไปอยู่ล่างสุดเสมอ */
 }
 
+/* หัวข้อข่าว: จำกัดบรรทัดไม่ให้หน้าพัง */
 .card-title {
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: #333;
+    color: #222;
     line-height: 1.5;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
+    /* จำกัดไว้ที่ 2 บรรทัด ถ้าเกินจะกลายเป็น ... */
     display: -webkit-box;
+    -webkit-line-clamp: 2; 
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
+/* Footer: จัดให้ติดขอบล่างของการ์ด */
 .card-footer {
     display: flex;
+    justify-content: flex-start;
     gap: 15px;
-    color: #888;
+    color: #777;
     font-size: 0.8rem;
-    border-top: 1px solid #f9f9f9;
-    padding-top: 10px;
+    margin-top: auto; /* ดันลงล่างสุด */
+    padding-top: 15px;
+    border-top: 1px solid #f5f5f5;
 }
 
 .footer-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
 }
 
-.icon {
-    font-size: 16px;
-    color: #004d40;
-}
-
-/* Responsive สำหรับมือถือ */
-@media (max-width: 1024px) {
-    .news-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
+/* Responsive สำหรับมือถือ (ปรับแต่งพิเศษ) */
 @media (max-width: 600px) {
-    .news-grid { grid-template-columns: 1fr; }
+    .news-section {
+        margin: 20px auto;
+        padding: 0 12px; /* ลดขอบลงนิดหน่อยเพื่อให้เนื้อหาเด่น */
+    }
+    
+    .news-grid {
+        gap: 16px; /* ลดช่องว่างระหว่างการ์ดในมือถือ */
+    }
+
+    .card-body {
+        padding: 16px;
+    }
 }
