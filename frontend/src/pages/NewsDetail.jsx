@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import api from '../services/api.js'; // ✅ แก้ไข Path ให้ตรงกับที่เก็บไฟล์ api.js ของคุณ
+import api from '../services/api.js'; 
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { getNewsById } from '../data/newsData';
 import { HiOutlineCalendar, HiOutlineEye } from "react-icons/hi";
+import { IoArrowBack } from "react-icons/io5"; // เพิ่มไอคอนปุ่มย้อนกลับ
 import '../css/NewsDetail.css';
 
 function NewsDetail() {
@@ -16,7 +17,6 @@ function NewsDetail() {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        // ✅ ใช้ api.get แทนการพิมพ์ URL localhost ตรงๆ
         const response = await api.get(`/news/${id}`);
         
         if (response.data) {
@@ -35,7 +35,12 @@ function NewsDetail() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  if (loading) return <div className="loading-state">กำลังโหลด...</div>;
+  if (loading) return (
+    <div className="loading-state">
+      <div className="spinner"></div> {/* เพิ่ม Spinner เพื่อความพรีเมียม */}
+      <p>กำลังโหลดข่าวสาร...</p>
+    </div>
+  );
 
   if (!news) {
     return (
@@ -50,31 +55,58 @@ function NewsDetail() {
     );
   }
 
-  // ป้องกันการ Error กรณี category เป็น Object (จาก MongoDB)
-  const categoryLabel = typeof news.category === 'object' ? 'ข่าวสาร' : news.category;
+  // 🟢 ดึงชื่อหมวดหมู่: รองรับทั้ง Object จาก DB และ String จากไฟล์ Local
+  const categoryLabel = news.category?.name || news.category || 'ข่าวสาร';
 
   return (
     <div className='news-detail-container'>
       <Navbar />
+      
       <div className="news-detail-content">
+        {/* 🟢 ปุ่มย้อนกลับแบบลอยตัว (Floating Back Button) */}
+        <Link to="/news" className="back-btn">
+          <IoArrowBack /> ย้อนกลับ
+        </Link>
+
         <div className="news-detail-wrapper">
           <div className="breadcrumb">
-            <Link to="/">หน้าแรก</Link> / <span>{categoryLabel}</span>
+            <Link to="/">หน้าแรก</Link> / <Link to="/news">ข่าวสาร</Link> / <span>{categoryLabel}</span>
           </div>
+
           <h1 className="news-detail-title">{news.title}</h1>
+
           <div className="news-meta">
-            <span><HiOutlineCalendar /> {news.date || news.createdAt?.substring(0,10)}</span>
-            <span><HiOutlineEye /> {news.views || 0} วิว</span>
+            <div className="meta-item">
+              <HiOutlineCalendar className="meta-icon" /> 
+              {/* ฟอร์แมตวันที่ให้สวยงามแบบไทย */}
+              {news.createdAt 
+                ? new Date(news.createdAt).toLocaleDateString('th-TH', { 
+                    year: 'numeric', month: 'long', day: 'numeric' 
+                  }) 
+                : (news.date || 'ไม่ระบุวันที่')}
+            </div>
+            <div className="meta-item">
+              <HiOutlineEye className="meta-icon" /> {news.views || 0} วิว
+            </div>
           </div>
+
+          {/* 🟢 คอนเทนเนอร์รูปภาพที่ปรับปรุง CSS ให้เห็นเต็มรูปแล้ว */}
           <div className="news-detail-image-container">
-            <img src={news.image || news.thumbnail} alt={news.title} />
+            <img 
+              src={news.image || news.thumbnail} 
+              alt={news.title} 
+              className="news-detail-image"
+            />
           </div>
+
+          {/* 🟢 เนื้อหาข่าว: รองรับ HTML จาก Database */}
           <div 
             className="news-detail-body"
             dangerouslySetInnerHTML={{ __html: news.content }}
           />
         </div>
       </div>
+
       <Footer />
     </div>
   );
