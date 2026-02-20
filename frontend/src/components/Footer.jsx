@@ -55,7 +55,7 @@ const Footer = () => {
         <div className="footer-column">
           <h3>เกี่ยวกับเรา</h3>
           <ul>
-            <li><Link to="/about">เกี่ยวกับ Pattayapal</Link></li>
+            <li><Link to="/about">เกี่ยวกับเรา</Link></li>
             <li><Link to="/contact">ติดต่อเรา</Link></li>
             <li><Link to="/privacy">นโยบายความเป็นส่วนตัว</Link></li>
             <li><Link to="/terms">เงื่อนไขการใช้งาน</Link></li>
