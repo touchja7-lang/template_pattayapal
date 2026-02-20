@@ -4,7 +4,6 @@ import DOMPurify from 'dompurify';
 import api from '../services/api.js';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { getNewsById } from '../data/newsData';
 import { HiOutlineCalendar, HiOutlineEye } from "react-icons/hi";
 import { IoArrowBack } from "react-icons/io5";
 import '../css/NewsDetail.css';
@@ -28,13 +27,8 @@ function NewsDetail() {
           throw new Error('No data returned');
         }
       } catch (err) {
-        console.warn("ไม่พบใน DB กำลังดึงจากไฟล์ Local...", err);
-        const localNews = getNewsById(id);
-        if (localNews) {
-          setNews(localNews);
-        } else {
-          setError(true);
-        }
+        console.error("ไม่พบข่าวใน DB:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -44,7 +38,6 @@ function NewsDetail() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // Loading — คง Navbar/Footer ไว้เพื่อไม่ให้หน้ากระตุก
   if (loading) return (
     <div className="news-detail-container">
       <Navbar />
@@ -56,7 +49,6 @@ function NewsDetail() {
     </div>
   );
 
-  // Error / ไม่พบข่าว
   if (error || !news) return (
     <div className="news-detail-container">
       <Navbar />
@@ -69,8 +61,6 @@ function NewsDetail() {
   );
 
   const categoryLabel = news.category?.name || news.category || 'ข่าวสาร';
-
-  // Sanitize HTML content เพื่อป้องกัน XSS
   const safeContent = DOMPurify.sanitize(news.content || '');
 
   return (
