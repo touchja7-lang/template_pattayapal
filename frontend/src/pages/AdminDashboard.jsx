@@ -1,10 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { newsAPI, categoryAPI } from '../services/api';
 import Navbar from '../components/Navbar';
-// นำ Footer import ออกถ้าไม่ได้ใช้ในจุดอื่น
 import { HiOutlinePencil, HiOutlineTrash, HiOutlinePlus } from "react-icons/hi";
 import '../css/Admin.css';
+
+const INITIAL_FORM = {
+  title: '',
+  category: '',
+  image: '',
+  excerpt: '',
+  content: '',
+  author: ''
+};
 
 function AdminDashboard() {
   const { user } = useAuth();
@@ -13,20 +21,16 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingNews, setEditingNews] = useState(null);
-  const [formData, setFormData] = useState({
-    title: '',
-    category: '',
-    image: '',
-    excerpt: '',
-    content: '',
-    author: ''
-  });
+  const [formData, setFormData] = useState(INITIAL_FORM);
+  const [notification, setNotification] = useState(null); // { type: 'success' | 'error', message }
+  const [confirmDelete, setConfirmDelete] = useState(null); // id ที่กำลังจะลบ
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const showNotification = (type, message) => {
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [newsRes, catRes] = await Promise.all([
@@ -37,13 +41,18 @@ function AdminDashboard() {
       setCategories(catRes.data);
     } catch (err) {
       console.error('Error fetching data:', err);
+      showNotification('error', 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleEdit = (item) => {
@@ -59,14 +68,32 @@ function AdminDashboard() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข่าวนี้?')) {
-      try {
-        await newsAPI.delete(id);
-        setNews(news.filter(item => item._id !== id));
-      } catch (err) {
-        alert('เกิดข้อผิดพลาดในการลบข่าว');
-      }
+  const handleOpenAdd = () => {
+    setEditingNews(null);
+    setFormData(INITIAL_FORM);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingNews(null);
+    setFormData(INITIAL_FORM);
+  };
+
+  // แทน window.confirm ด้วย state-based confirm modal
+  const handleDeleteRequest = (id) => {
+    setConfirmDelete(id);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await newsAPI.delete(confirmDelete);
+      setNews(prev => prev.filter(item => item._id !== confirmDelete));
+      showNotification('success', 'ลบข่าวสำเร็จ');
+    } catch (err) {
+      showNotification('error', 'เกิดข้อผิดพลาดในการลบข่าว');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -75,21 +102,18 @@ function AdminDashboard() {
     try {
       if (editingNews) {
         await newsAPI.update(editingNews._id, formData);
-        alert('อัปเดตข่าวสำเร็จ');
+        showNotification('success', 'อัปเดตข่าวสำเร็จ');
       } else {
         await newsAPI.create(formData);
-        alert('สร้างข่าวสำเร็จ');
+        showNotification('success', 'สร้างข่าวสำเร็จ');
       }
-      setShowModal(false);
-      setEditingNews(null);
-      setFormData({ title: '', category: '', image: '', excerpt: '', content: '', author: '' });
+      handleCloseModal();
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || 'เกิดข้อผิดพลาด');
+      showNotification('error', err.response?.data?.message || 'เกิดข้อผิดพลาด');
     }
   };
 
-  // กรณีไม่มีสิทธิ์เข้าถึง (เอา Footer ออกแล้ว)
   if (!user || user.role !== 'admin') {
     return (
       <div className="admin-page">
@@ -106,14 +130,18 @@ function AdminDashboard() {
   return (
     <div className="admin-page">
       <Navbar />
+
+      {/* Notification Toast */}
+      {notification && (
+        <div className={`admin-notification admin-notification--${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
+
       <div className="admin-container">
         <div className="admin-header">
           <h1>จัดการข่าวสาร</h1>
-          <button className="add-news-btn" onClick={() => {
-            setEditingNews(null);
-            setFormData({ title: '', category: '', image: '', excerpt: '', content: '', author: '' });
-            setShowModal(true);
-          }}>
+          <button className="add-news-btn" onClick={handleOpenAdd}>
             <HiOutlinePlus /> เพิ่มข่าวใหม่
           </button>
         </div>
@@ -133,33 +161,48 @@ function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {news.map((item) => (
-                  <tr key={item._id}>
-                    <td>
-                      <img src={item.image} alt={item.title} className="admin-news-thumb" />
-                    </td>
-                    <td className="admin-news-title">{item.title}</td>
-                    <td>{item.category?.name || 'ไม่มีหมวดหมู่'}</td>
-                    <td>{new Date(item.createdAt).toLocaleDateString('th-TH')}</td>
-                    <td className="admin-actions">
-                      <button className="edit-btn" onClick={() => handleEdit(item)}>
-                        <HiOutlinePencil />
-                      </button>
-                      <button className="delete-btn" onClick={() => handleDelete(item._id)}>
-                        <HiOutlineTrash />
-                      </button>
-                    </td>
+                {news.length > 0 ? (
+                  news.map((item) => (
+                    <tr key={item._id}>
+                      <td>
+                        <img
+                          src={item.image}
+                          alt={item.title}
+                          className="admin-news-thumb"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/images/placeholder.png';
+                          }}
+                        />
+                      </td>
+                      <td className="admin-news-title">{item.title}</td>
+                      <td>{item.category?.name || 'ไม่มีหมวดหมู่'}</td>
+                      <td>{new Date(item.createdAt).toLocaleDateString('th-TH')}</td>
+                      <td className="admin-actions">
+                        <button className="edit-btn" onClick={() => handleEdit(item)} title="แก้ไข">
+                          <HiOutlinePencil />
+                        </button>
+                        <button className="delete-btn" onClick={() => handleDeleteRequest(item._id)} title="ลบ">
+                          <HiOutlineTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="5" className="admin-empty">ยังไม่มีข่าวสาร</td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         )}
       </div>
 
+      {/* Form Modal */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>{editingNews ? 'แก้ไขข่าว' : 'เพิ่มข่าวใหม่'}</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
@@ -192,14 +235,27 @@ function AdminDashboard() {
                 <input type="text" name="author" value={formData.author} onChange={handleInputChange} />
               </div>
               <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>ยกเลิก</button>
+                <button type="button" className="cancel-btn" onClick={handleCloseModal}>ยกเลิก</button>
                 <button type="submit" className="save-btn">บันทึก</button>
               </div>
             </form>
           </div>
         </div>
       )}
-      {/* Footer ถูกลบออกจากตำแหน่งนี้แล้ว */}
+
+      {/* Confirm Delete Modal */}
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal-content modal-confirm" onClick={(e) => e.stopPropagation()}>
+            <h2>ยืนยันการลบ</h2>
+            <p>คุณแน่ใจหรือไม่ว่าต้องการลบข่าวนี้? การกระทำนี้ไม่สามารถย้อนกลับได้</p>
+            <div className="modal-actions">
+              <button className="cancel-btn" onClick={() => setConfirmDelete(null)}>ยกเลิก</button>
+              <button className="delete-btn" onClick={handleDeleteConfirm}>ลบ</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

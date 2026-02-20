@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // ตรวจสอบตัวแปรจาก Vercel ถ้าไม่มีให้ใช้ localhost
-const API_URL = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL}/api` 
+const API_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
   : 'http://localhost:5000/api';
 
 const api = axios.create({
@@ -13,24 +13,54 @@ const api = axios.create({
   },
 });
 
-// ส่ง Token ไปด้วยทุกครั้ง (ถ้ามี)
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+// --- Request Interceptor: แนบ Token ทุก Request ---
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// --- Response Interceptor: จัดการ Error กลาง ---
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const status = error.response?.status;
+
+    if (status === 401) {
+      // Token หมดอายุหรือไม่ Valid → ล้าง Token และ Redirect ไปหน้า Login
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+    if (status === 403) {
+      console.warn('คุณไม่มีสิทธิ์เข้าถึงส่วนนี้');
+    }
+
+    if (status >= 500) {
+      console.error('เกิดข้อผิดพลาดที่ Server กรุณาลองใหม่อีกครั้ง');
+    }
+
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-// --- ส่วนการ Export สำหรับระบบทั้งหมด ---
-
+// --- Auth ---
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
-  logout: () => api.post('/auth/logout'),
+  logout: () => {
+    localStorage.removeItem('token');
+    return api.post('/auth/logout');
+  },
   getMe: () => api.get('/auth/me'),
 };
 
+// --- News ---
 export const newsAPI = {
   getAll: (params) => api.get('/news', { params }),
   getById: (id) => api.get(`/news/${id}`),
@@ -39,11 +69,12 @@ export const newsAPI = {
   delete: (id) => api.delete(`/news/${id}`),
 };
 
+// --- Category ---
 export const categoryAPI = {
   getAll: () => api.get('/categories'),
 };
 
-// 🚩 เพิ่มส่วนนี้เข้าไปเพื่อให้ CommentSection.jsx ทำงานได้
+// --- Comment ---
 export const commentAPI = {
   getByNewsId: (newsId) => api.get(`/comments/news/${newsId}`),
   create: (data) => api.post('/comments', data),

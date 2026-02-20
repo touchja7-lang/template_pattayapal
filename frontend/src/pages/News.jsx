@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { newsAPI, categoryAPI } from '../services/api';
 import ImageSlider from '../components/ImageSlider';
 import Navbar from '../components/Navbar';
@@ -10,6 +10,7 @@ import '../css/News.css';
 
 function News() {
   const location = useLocation();
+  const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const searchFromUrl = queryParams.get('search') || '';
 
@@ -26,7 +27,7 @@ function News() {
   useEffect(() => {
     setSearchTerm(searchFromUrl);
     fetchNews(selectedCategory, searchFromUrl);
-  }, [selectedCategory, searchFromUrl]);
+  }, [selectedCategory, location.search]);
 
   const fetchCategories = async () => {
     try {
@@ -37,13 +38,13 @@ function News() {
     }
   };
 
-  const fetchNews = async (category, search) => {
+  const fetchNews = useCallback(async (category, search) => {
     try {
       setLoading(true);
       const params = {};
       if (category) params.category = category;
       if (search) params.search = search;
-      
+
       const response = await newsAPI.getAll(params);
       setNewsList(response.data);
     } catch (err) {
@@ -51,33 +52,32 @@ function News() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return (
     <div>
       <Navbar />
       <ImageSlider />
-      
+
       <div className="news-page-container">
         <div className="news-header">
           <h2 className="news-page-title">
             {searchTerm ? `ผลการค้นหา: "${searchTerm}"` : 'ข่าวสารทั้งหมด'}
           </h2>
           {searchTerm && (
-            <button 
+            <button
               className="clear-search-btn"
               onClick={() => {
                 setSearchTerm('');
-                window.history.pushState({}, '', '/news');
-                fetchNews(selectedCategory, '');
+                navigate('/news');
               }}
             >
               ล้างการค้นหา
             </button>
           )}
         </div>
-        
-        <CategoryFilter 
+
+        <CategoryFilter
           categories={categories.map(c => c.name)}
           selectedCategory={categories.find(c => c._id === selectedCategory)?.name || ''}
           onSelectCategory={(catName) => {
@@ -109,20 +109,23 @@ function News() {
             ) : (
               <div className="no-news-container">
                 <p className="no-news">ไม่พบข่าวที่คุณต้องการ</p>
-                <button onClick={() => {
-                  setSelectedCategory('');
-                  setSearchTerm('');
-                  window.history.pushState({}, '', '/news');
-                  fetchNews('', '');
-                }} className="reset-btn">ดูข่าวทั้งหมด</button>
+                <button
+                  onClick={() => {
+                    setSelectedCategory('');
+                    setSearchTerm('');
+                    navigate('/news');
+                  }}
+                  className="reset-btn"
+                >
+                  ดูข่าวทั้งหมด
+                </button>
               </div>
             )}
           </div>
         )}
 
-        {/* เพิ่ม PopularNews กลับมาเพื่อให้เหมือนหน้าเดิม */}
         <div className="popular-news-section-wrapper">
-            <PopularNews />
+          <PopularNews />
         </div>
       </div>
       <Footer />
