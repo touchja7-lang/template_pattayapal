@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Navbar.css';
-import { IoPerson, IoSettingsOutline, IoMenu, IoClose, IoLogOut } from "react-icons/io5";
+import { IoPerson, IoSettingsOutline, IoMenu, IoClose, IoLogOut, IoChevronDown } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ function Navbar() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState([]);
+  const [showCategoryList, setShowCategoryList] = useState(false);
 
   const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/616/616408.png';
 
@@ -40,6 +41,11 @@ function Navbar() {
     }
   };
 
+  const closeMobileMenu = () => {
+    setShowMobileMenu(false);
+    setShowCategoryList(false);
+  };
+
   return (
     <nav className='navbar-main-container'>
       <div className="navbar-content">
@@ -54,20 +60,10 @@ function Navbar() {
           </Link>
         </div>
 
-        {/* --- ตรงกลาง: เมนู --- */}
-        <div className={`nav-center ${showMobileMenu ? 'active' : ''}`}>
+        {/* --- ตรงกลาง: เมนู (desktop เหลือแค่ลิงก์หลัก) --- */}
+        <div className="nav-center">
           <div className="nav-links">
-            <Link to="/news" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>ข่าว</Link>
-            {categories.map((cat) => (
-              <Link
-                key={cat._id}
-                to={`/news/category/${encodeURIComponent(cat.name)}`}
-                className="nav-link-item"
-                onClick={() => setShowMobileMenu(false)}
-              >
-                {cat.name}
-              </Link>
-            ))}
+            <Link to="/news" className="nav-link-item">ข่าว</Link>
           </div>
         </div>
 
@@ -133,6 +129,45 @@ function Navbar() {
           )}
         </div>
       </div>
+
+      {/* --- Hamburger Menu (Sidebar / Dropdown) --- */}
+      {showMobileMenu && (
+        <div className="hamburger-menu">
+          <Link to="/news" className="hamburger-link" onClick={closeMobileMenu}>
+            ข่าวทั้งหมด
+          </Link>
+
+          {/* หมวดหมู่ พร้อม accordion toggle */}
+          {categories.length > 0 && (
+            <div className="hamburger-category-section">
+              <button
+                className="hamburger-category-toggle"
+                onClick={() => setShowCategoryList(!showCategoryList)}
+              >
+                หมวดหมู่
+                <IoChevronDown
+                  className={`chevron-icon ${showCategoryList ? 'open' : ''}`}
+                />
+              </button>
+
+              {showCategoryList && (
+                <div className="hamburger-category-list">
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat._id}
+                      to={`/news/category/${encodeURIComponent(cat.name)}`}
+                      className="hamburger-category-item"
+                      onClick={closeMobileMenu}
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
