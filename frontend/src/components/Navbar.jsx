@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Navbar.css';
 import { IoPerson, IoSettingsOutline, IoMenu, IoClose, IoLogOut } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { categoryAPI } from '../services/api';
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -12,11 +13,15 @@ function Navbar() {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [categories, setCategories] = useState([]);
 
   const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/616/616408.png';
 
-  const categories = ["กีฬา", "บันเทิง", "เทคโนโลยี", "เศรษฐกิจ"];
+  useEffect(() => {
+    categoryAPI.getAll()
+      .then(res => setCategories(res.data))
+      .catch(err => console.error('Error fetching categories:', err));
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -38,7 +43,7 @@ function Navbar() {
   return (
     <nav className='navbar-main-container'>
       <div className="navbar-content">
-        
+
         {/* --- ฝั่งซ้าย: Logo --- */}
         <div className="nav-left">
           <button className="mobile-menu-btn" onClick={() => setShowMobileMenu(!showMobileMenu)}>
@@ -53,17 +58,16 @@ function Navbar() {
         <div className={`nav-center ${showMobileMenu ? 'active' : ''}`}>
           <div className="nav-links">
             <Link to="/news" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>ข่าว</Link>
-            {categories.map((cat, index) => (
-              <Link 
-                key={index} 
-                to={`/news/category/${encodeURIComponent(cat)}`} 
+            {categories.map((cat) => (
+              <Link
+                key={cat._id}
+                to={`/news/category/${encodeURIComponent(cat.name)}`}
                 className="nav-link-item"
                 onClick={() => setShowMobileMenu(false)}
               >
-                {cat}
+                {cat.name}
               </Link>
             ))}
-            {/* <Link to="/library" className="nav-link-item" onClick={() => setShowMobileMenu(false)}>ห้องสมุด</Link> */}
           </div>
         </div>
 
@@ -89,18 +93,12 @@ function Navbar() {
           {user ? (
             <div className="user-profile-wrapper">
               <div className="profile-trigger" onClick={() => setShowUserMenu(!showUserMenu)}>
-                {/* ตรวจสอบทั้ง user.profileImage (จาก DB) และ user.image (เผื่อบางที่เก็บคนละชื่อ) 
-                  ใส่ Query String เพื่อป้องกัน Browser Cache รูปเก่า
-                */}
                 {(user.profileImage || user.image) ? (
-                  <img 
-                    src={user.profileImage || user.image} 
-                    alt="Profile" 
-                    key={user.profileImage || user.image} // ใช้ key เพื่อให้ React บังคับ re-render เมื่อ URL เปลี่ยน
-                    onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src = defaultAvatar;
-                    }} 
+                  <img
+                    src={user.profileImage || user.image}
+                    alt="Profile"
+                    key={user.profileImage || user.image}
+                    onError={(e) => { e.target.onerror = null; e.target.src = defaultAvatar; }}
                   />
                 ) : (
                   <div className="default-avatar-placeholder">
@@ -108,7 +106,7 @@ function Navbar() {
                   </div>
                 )}
               </div>
-              
+
               {showUserMenu && (
                 <div className="user-dropdown">
                   <div className="dropdown-header">
