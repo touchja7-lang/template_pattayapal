@@ -3,9 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../services/api.js'; 
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { getNewsById } from '../data/newsData';
 import { HiOutlineCalendar, HiOutlineEye } from "react-icons/hi";
-import { IoArrowBack } from "react-icons/io5"; // เพิ่มไอคอนปุ่มย้อนกลับ
+import { IoArrowBack } from "react-icons/io5";
 import '../css/NewsDetail.css';
 
 function NewsDetail() {
@@ -18,14 +17,11 @@ function NewsDetail() {
       try {
         setLoading(true);
         const response = await api.get(`/news/${id}`);
-        
         if (response.data) {
           setNews(response.data);
         }
       } catch (err) {
-        console.warn("ไม่พบใน DB กำลังดึงจากไฟล์ Local...");
-        const localNews = getNewsById(id);
-        setNews(localNews);
+        console.error("ไม่พบข่าว:", err);
       } finally {
         setLoading(false);
       }
@@ -34,6 +30,8 @@ function NewsDetail() {
     fetchNews();
     window.scrollTo(0, 0);
   }, [id]);
+
+  // ส่วนที่เหลือเหมือนเดิมทุกอย่าง
 
   if (loading) return (
     <div className="loading-state">

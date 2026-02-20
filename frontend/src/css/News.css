@@ -179,7 +179,7 @@
     color: #1a1a1a;
     margin-bottom: 0;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    /* -webkit-line-clamp: 2; */
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
