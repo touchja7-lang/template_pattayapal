@@ -42,10 +42,12 @@ export const categoryAPI = {
 };
 
 // 🚩 เพิ่มส่วนนี้เข้าไปเพื่อให้ CommentSection.jsx ทำงานได้
-export const commentAPI = {
-  getByNewsId: (newsId) => api.get(`/comments/news/${newsId}`),
-  create: (data) => api.post('/comments', data),
-  delete: (id) => api.delete(`/comments/${id}`),
+export const newsAPI = {
+  getAll: (params) => api.get('/news', { params }),
+  getById: (id) => api.get(`/news/${id}`),
+  create: (data) => api.post('/news', data),
+  update: (id, data) => api.put(`/news/${id}`, data),  
+  delete: (id) => api.delete(`/news/${id}`),            
 };
 
 export default api;
