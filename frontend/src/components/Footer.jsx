@@ -26,7 +26,7 @@ const Footer = () => {
         </div>
 
         {/* คอลัมน์ที่ 2: Pattaya Library */}
-        <div className="footer-column">
+        {/* <div className="footer-column">
           <h3>Pattaya Library</h3>
           <ul>
             <li><Link to="/library">พัทยาเหนือ</Link></li>
@@ -37,7 +37,7 @@ const Footer = () => {
             <li><Link to="/library">เกาะล้าน</Link></li>
             <li><Link to="/library">การท่องเที่ยว</Link></li>
           </ul>
-        </div>
+        </div> */}
 
         {/* คอลัมน์ที่ 3: หมวดหมู่ */}
         <div className="footer-column">
