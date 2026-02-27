@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import CategoryFilter from '../components/CategoryFilter';
 import NewsHero from '../components/Newshero';
 import '../css/News.css';
+import PopularSection from '../components/Popularcard';
 
 function News() {
   const location = useLocation();
@@ -88,6 +89,7 @@ function News() {
         )}
 
       </div>
+      <PopularSection news={newsList} />
 
       <Footer />
     </div>
