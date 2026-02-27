@@ -24,10 +24,6 @@ function App() {
       </Route>
       <Route path='/news/category/:categoryName' element={<CategoryNews />}>
       </Route>
-      <Route path='/library/' element={<Library />}>
-      </Route>
-      <Route path='/library/:id' element={<LibraryDetail />}>
-      </Route>
       <Route path='/login' element={<Login />}>
       </Route>
       <Route path='/register' element={<Register />}>
