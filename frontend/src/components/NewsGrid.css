@@ -1,276 +1,271 @@
-@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&family=Noto+Serif+Thai:wght@700;800&display=swap');
 
-/* ===== SECTION ===== */
-.ng-section {
-  width: 100%;
-  max-width: 1200px;
-  margin: 48px auto;
-  padding: 0 24px;
-  box-sizing: border-box;
-  font-family: 'Kanit', sans-serif;
+/* ================================================
+   VARIABLES
+   ================================================ */
+:root {
+  --ng-green:      #16a34a;
+  --ng-green-dk:   #15803d;
+  --ng-green-pale: #f0fdf4;
+  --ng-white:      #ffffff;
+  --ng-gray-bg:    #f9fafb;
+  --ng-gray-line:  #e5e7eb;
+  --ng-text:       #1a1a1a;
+  --ng-text-dim:   #6b7280;
+  --ng-text-sm:    #9ca3af;
+  --ng-radius:     10px;
+  --ng-shadow:     0 2px 12px rgba(0,0,0,0.07);
 }
 
-/* ===== HEADER ===== */
+/* ================================================
+   SECTION
+   ================================================ */
+.ng-section {
+  font-family: 'Sarabun', sans-serif;
+  padding: 32px 28px;
+  background: var(--ng-white);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ================================================
+   HEADER
+   ================================================ */
 .ng-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .ng-header-left {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 10px;
 }
 
-.ng-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #0072c6;
-  background: rgba(0,114,198,0.08);
-  padding: 3px 12px;
-  border-radius: 50px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  width: fit-content;
+.ng-header-bar {
+  width: 5px;
+  height: 26px;
+  background: var(--ng-green);
+  border-radius: 3px;
+  flex-shrink: 0;
 }
 
 .ng-title {
-  font-size: 1.6rem;
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 22px;
   font-weight: 800;
-  color: #0a1628;
-  letter-spacing: -0.5px;
+  color: var(--ng-text);
   margin: 0;
-  position: relative;
-  padding-bottom: 10px;
-}
-
-.ng-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 40px;
-  height: 3px;
-  background: linear-gradient(90deg, #0072c6, #00d4aa);
-  border-radius: 2px;
+  letter-spacing: 0.2px;
 }
 
 .ng-view-all {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.88rem;
+  gap: 5px;
+  font-size: 14px;
   font-weight: 600;
-  color: #0072c6;
+  color: var(--ng-green);
   text-decoration: none;
-  padding: 8px 18px;
-  border-radius: 50px;
-  border: 1.5px solid rgba(0,114,198,0.25);
-  background: rgba(0,114,198,0.04);
-  transition: all 0.25s ease;
-  white-space: nowrap;
-  font-family: 'Kanit', sans-serif;
+  transition: color 0.15s, gap 0.15s;
 }
-
 .ng-view-all:hover {
-  background: #0072c6;
-  color: #fff;
-  border-color: #0072c6;
-  transform: translateX(2px);
+  color: var(--ng-green-dk);
+  gap: 8px;
 }
 
-/* ===== GRID — 3 columns ===== */
+/* ================================================
+   GRID — 6 columns desktop
+   ================================================ */
 .ng-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  width: 100%;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 18px;
 }
 
-/* ===== CARD ===== */
+/* ================================================
+   CARD
+   ================================================ */
 .ng-card {
-  text-decoration: none;
-  color: inherit;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
-  border-radius: 20px;
+  text-decoration: none;
+  border-radius: var(--ng-radius);
   overflow: hidden;
-  border: 1px solid rgba(0,74,124,0.06);
-  box-shadow: 0 4px 20px rgba(0,74,124,0.07);
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  position: relative;
-  animation: ngCardUp 0.5s ease both;
+  background: var(--ng-white);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: ng-fadeUp 0.4s ease both;
 }
-
-.ng-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #0072c6, #00d4aa);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
 .ng-card:hover {
-  transform: translateY(-10px) scale(1.01);
-  box-shadow: 0 20px 56px rgba(0,74,124,0.16);
-  border-color: rgba(0,114,198,0.14);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
 }
 
-.ng-card:hover::after {
-  transform: scaleX(1);
-}
-
-@keyframes ngCardUp {
-  from { opacity: 0; transform: translateY(28px); }
+@keyframes ng-fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== CARD IMAGE ===== */
-.ng-card-image {
-  position: relative;
-  aspect-ratio: 16 / 9;
+/* Image */
+.ng-card-img-wrap {
+  width: 100%;
+  aspect-ratio: 4/3;
   overflow: hidden;
+  background: var(--ng-gray-bg);
+  border-radius: var(--ng-radius);
 }
-
-.ng-card-image img {
+.ng-card-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  display: block;
+  transition: transform 0.35s ease;
+}
+.ng-card:hover .ng-card-img {
+  transform: scale(1.06);
 }
 
-.ng-card:hover .ng-card-image img {
-  transform: scale(1.08);
-}
-
-.ng-card-image::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 45%;
-  background: linear-gradient(to top, rgba(10,22,40,0.4), transparent);
-  pointer-events: none;
-}
-
-.ng-card-category {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 2;
-  background: rgba(10,22,40,0.72);
-  backdrop-filter: blur(10px);
-  color: #00d4aa;
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 4px 12px;
-  border-radius: 50px;
-  font-family: 'Kanit', sans-serif;
-  letter-spacing: 0.8px;
-  border: 1px solid rgba(0,212,170,0.25);
-  text-transform: uppercase;
-}
-
-/* ===== CARD BODY ===== */
+/* Body */
 .ng-card-body {
-  padding: 20px 22px 18px;
+  padding: 10px 2px 4px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
   flex: 1;
 }
 
 .ng-card-title {
-  font-size: 0.97rem;
-  font-weight: 700;
-  color: #0a1628;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ng-text);
   line-height: 1.6;
-  margin-bottom: 14px;
+  margin: 0;
   display: -webkit-box;
-  /* -webkit-line-clamp: 2; */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  flex: 1;
-  transition: color 0.2s;
+  transition: color 0.15s;
 }
-
 .ng-card:hover .ng-card-title {
-  color: #0072c6;
+  color: var(--ng-green);
 }
 
-/* ===== CARD FOOTER ===== */
-.ng-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.ng-card-date {
+  font-size: 12px;
+  color: var(--ng-text-sm);
   margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0,74,124,0.07);
-  font-size: 0.76rem;
-  color: #8892a0;
 }
 
-.ng-footer-item {
+/* ================================================
+   SKELETON LOADING
+   ================================================ */
+.ng-skeleton-header {
+  height: 28px;
+  width: 160px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ng-shimmer 1.2s infinite;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.ng-skeleton-card {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: var(--ng-radius);
+  overflow: hidden;
+}
+.ng-skeleton-img {
+  aspect-ratio: 4/3;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ng-shimmer 1.2s infinite;
+  border-radius: var(--ng-radius);
+}
+.ng-skeleton-line {
+  height: 13px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ng-shimmer 1.2s infinite;
+  border-radius: 4px;
+}
+.ng-skeleton-line.short { width: 70%; }
+.ng-skeleton-date {
+  height: 11px;
+  width: 55%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: ng-shimmer 1.2s infinite;
+  border-radius: 4px;
+  margin-top: 4px;
 }
 
-.ng-footer-item svg {
-  font-size: 0.95rem;
-  color: #0072c6;
+@keyframes ng-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-/* ===== STATES ===== */
-.ng-loading,
-.ng-empty {
-  text-align: center;
-  padding: 4rem;
-  color: #8892a0;
-  font-size: 0.95rem;
-  grid-column: 1 / -1;
-}
-
+/* ================================================
+   ERROR / EMPTY
+   ================================================ */
 .ng-error {
   text-align: center;
-  padding: 3rem;
-  color: #8892a0;
+  padding: 40px 20px;
+  color: var(--ng-text-dim);
+  font-size: 15px;
 }
-
 .ng-retry-btn {
   margin-top: 12px;
-  background: linear-gradient(135deg, #004a7c, #0072c6);
+  padding: 8px 20px;
+  background: var(--ng-green);
   color: #fff;
   border: none;
-  padding: 10px 24px;
-  border-radius: 50px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Sarabun', sans-serif;
   cursor: pointer;
-  font-family: 'Kanit', sans-serif;
-  transition: all 0.25s;
+  transition: background 0.15s;
+}
+.ng-retry-btn:hover { background: var(--ng-green-dk); }
+
+.ng-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  color: var(--ng-text-dim);
+  font-size: 15px;
 }
 
-.ng-retry-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,114,198,0.3);
+/* ================================================
+   RESPONSIVE
+   ================================================ */
+
+/* 4 columns */
+@media (max-width: 1200px) {
+  .ng-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .ng-section { padding: 28px 20px; }
 }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 1024px) {
-  .ng-grid { grid-template-columns: repeat(2, 1fr); }
+/* 3 columns */
+@media (max-width: 900px) {
+  .ng-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .ng-title { font-size: 19px; }
 }
 
-@media (max-width: 640px) {
-  .ng-section { padding: 0 16px; margin: 32px auto; }
-  .ng-grid { grid-template-columns: 1fr; gap: 16px; }
-  .ng-title { font-size: 1.3rem; }
-  .ng-header { margin-bottom: 20px; }
+/* 2 columns */
+@media (max-width: 600px) {
+  .ng-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .ng-section { padding: 20px 14px; }
+  .ng-title { font-size: 17px; }
+  .ng-card-title { font-size: 12px; }
+  .ng-card-date  { font-size: 11px; }
+}
+
+/* 2 columns small */
+@media (max-width: 400px) {
+  .ng-grid { gap: 10px; }
+  .ng-card-title { -webkit-line-clamp: 2; }
 }
