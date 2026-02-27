@@ -16,12 +16,12 @@ const NewsHero = ({ currentCategory = '' }) => {
     const fetchAll = async () => {
       try {
         const [newsRes, catRes] = await Promise.all([
-          newsAPI.getAll({ params: { sort: '-createdAt', limit: 15 } }),
+          newsAPI.getAll({ params: { sort: '-createdAt', limit: 20 } }),
           categoryAPI.getAll(),
         ]);
         const all = Array.isArray(newsRes.data) ? newsRes.data : [];
         setSlides(all.slice(0, 5));
-        setSideNews(all.slice(5, 11)); // ดึง 6 รายการ
+        setSideNews(all.slice(5, 15)); // ดึง 10 รายการ เพื่อเติมเต็มความสูง slider
         setCategories(catRes.data || []);
       } catch (err) {
         console.error('NewsHero fetch error:', err);
