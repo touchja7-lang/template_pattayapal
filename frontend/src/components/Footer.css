@@ -78,6 +78,12 @@
   padding-left: 4px;
 }
 
+.ft-loading-text {
+  font-size: 13px;
+  color: var(--ft-text-sm);
+  font-style: italic;
+}
+
 /* ── SOCIAL ICONS ── */
 .ft-social {
   display: flex;

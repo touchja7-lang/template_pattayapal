@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { IoLogoFacebook, IoLogoTiktok, IoLogoInstagram, IoLogoYoutube, IoGlobeOutline } from "react-icons/io5";
+import { categoryAPI } from '../services/api';
 import './Footer.css';
 
 const Footer = () => {
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    categoryAPI.getAll()
+      .then(res => setCategories(res.data))
+      .catch(err => console.error('Error fetching categories:', err));
+  }, []);
+
   return (
     <footer className="ft-root">
 
@@ -15,11 +24,18 @@ const Footer = () => {
           <div className="ft-col">
             <h4 className="ft-col-title">หมวดหมู่</h4>
             <div className="ft-links">
-              <Link to="/news/category/การเมือง">การเมือง</Link>
-              <Link to="/news/category/เศรษฐกิจ">เศรษฐกิจ</Link>
-              <Link to="/news/category/กีฬา">กีฬา</Link>
-              <Link to="/news/category/บันเทิง">บันเทิง</Link>
-              <Link to="/news/category/เทคโนโลยี">เทคโนโลยี</Link>
+              {categories.length > 0 ? (
+                categories.map(cat => (
+                  <Link
+                    key={cat._id}
+                    to={`/news/category/${encodeURIComponent(cat.name)}`}
+                  >
+                    {cat.name}
+                  </Link>
+                ))
+              ) : (
+                <span className="ft-loading-text">กำลังโหลด...</span>
+              )}
             </div>
           </div>
 
