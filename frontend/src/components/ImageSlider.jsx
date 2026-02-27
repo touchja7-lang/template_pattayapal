@@ -54,7 +54,7 @@ const ImageSlider = () => {
     <section className="isl-section">
       {/* ── HEADER ── */}
       <div className="isl-header">
-        <div className="isl-header-icon">✦</div>
+        <div className="isl-header-icon" />
         <h2 className="isl-header-title">ข่าวเด่นวันนี้</h2>
       </div>
 
@@ -73,7 +73,6 @@ const ImageSlider = () => {
           </div>
           <div className="isl-featured-body">
             <span className="isl-time">{formatTime(featured.createdAt)}</span>
-            <span className="isl-cat-tag">{getCategoryName(featured.category)}</span>
             <h3 className="isl-featured-title">{featured.title}</h3>
             <div className="isl-meta">
               <span>👁 {featured.views || 0} ครั้ง</span>
@@ -107,6 +106,7 @@ const ImageSlider = () => {
             ))}
           </div>
         </div>
+
       </div>
     </section>
   );
