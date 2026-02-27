@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { IoChevronBack, IoChevronForward, IoHomeOutline } from 'react-icons/io5';
 import { newsAPI, categoryAPI } from '../services/api';
 import './NewsHero.css';
@@ -11,19 +11,17 @@ const NewsHero = ({ currentCategory = '' }) => {
   const [current, setCurrent]       = useState(0);
   const [loading, setLoading]       = useState(true);
   const timerRef = useRef(null);
-  const navigate = useNavigate();
 
-  /* ── fetch data ── */
   useEffect(() => {
     const fetchAll = async () => {
       try {
         const [newsRes, catRes] = await Promise.all([
-          newsAPI.getAll({ params: { sort: '-createdAt', limit: 10 } }),
+          newsAPI.getAll({ params: { sort: '-createdAt', limit: 15 } }),
           categoryAPI.getAll(),
         ]);
         const all = Array.isArray(newsRes.data) ? newsRes.data : [];
         setSlides(all.slice(0, 5));
-        setSideNews(all.slice(5, 8));
+        setSideNews(all.slice(5, 11)); // ดึง 6 รายการ
         setCategories(catRes.data || []);
       } catch (err) {
         console.error('NewsHero fetch error:', err);
@@ -34,7 +32,6 @@ const NewsHero = ({ currentCategory = '' }) => {
     fetchAll();
   }, []);
 
-  /* ── autoplay ── */
   useEffect(() => {
     if (slides.length <= 1) return;
     timerRef.current = setInterval(() => {
@@ -53,18 +50,12 @@ const NewsHero = ({ currentCategory = '' }) => {
     const d = new Date(dateStr);
     const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
                     'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-    const day   = d.getDate();
-    const month = months[d.getMonth()];
-    const year  = d.getFullYear() + 543;
-    const h     = String(d.getHours()).padStart(2, '0');
-    const m     = String(d.getMinutes()).padStart(2, '0');
-    return `${day} ${month} ${year} ${h}:${m} น.`;
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')} น.`;
   };
 
   const getCatName = (cat) =>
     cat && typeof cat === 'object' ? cat.name || 'ทั่วไป' : cat || 'ทั่วไป';
 
-  /* ── skeleton ── */
   if (loading) return (
     <div className="nh-root">
       <div className="nh-skeleton-title" />
@@ -72,7 +63,7 @@ const NewsHero = ({ currentCategory = '' }) => {
       <div className="nh-body">
         <div className="nh-skeleton-slider" />
         <div className="nh-skeleton-side">
-          {[...Array(3)].map((_, i) => <div key={i} className="nh-skeleton-side-item" />)}
+          {[...Array(6)].map((_, i) => <div key={i} className="nh-skeleton-side-item" />)}
         </div>
       </div>
     </div>
@@ -83,26 +74,23 @@ const NewsHero = ({ currentCategory = '' }) => {
   return (
     <div className="nh-root">
 
-      {/* ── PAGE TITLE ── */}
+      {/* PAGE TITLE */}
       <div className="nh-title-wrap">
         <div className="nh-title-line" />
         <h1 className="nh-title">ข่าว</h1>
         <div className="nh-title-line" />
       </div>
 
-      {/* ── BREADCRUMB ── */}
+      {/* BREADCRUMB */}
       <div className="nh-breadcrumb">
         <Link to="/" className="nh-bc-home"><IoHomeOutline /> หน้าแรก</Link>
         <span className="nh-bc-sep">›</span>
         <span className="nh-bc-current">ข่าว</span>
       </div>
 
-      {/* ── CATEGORY PILLS ── */}
+      {/* CATEGORY PILLS */}
       <div className="nh-cats">
-        <Link
-          to="/news"
-          className={`nh-cat-pill ${!currentCategory ? 'active' : ''}`}
-        >
+        <Link to="/news" className={`nh-cat-pill ${!currentCategory ? 'active' : ''}`}>
           ทั้งหมด
         </Link>
         {categories.map(cat => (
@@ -116,7 +104,7 @@ const NewsHero = ({ currentCategory = '' }) => {
         ))}
       </div>
 
-      {/* ── MAIN BODY: slider + side ── */}
+      {/* BODY */}
       {slides.length > 0 && (
         <div className="nh-body">
 
@@ -139,28 +127,17 @@ const NewsHero = ({ currentCategory = '' }) => {
               </div>
             </Link>
 
-            {/* arrows */}
-            <button className="nh-arrow left"  onClick={() => goTo(current - 1)} aria-label="prev">
-              <IoChevronBack />
-            </button>
-            <button className="nh-arrow right" onClick={() => goTo(current + 1)} aria-label="next">
-              <IoChevronForward />
-            </button>
+            <button className="nh-arrow left"  onClick={() => goTo(current - 1)} aria-label="prev"><IoChevronBack /></button>
+            <button className="nh-arrow right" onClick={() => goTo(current + 1)} aria-label="next"><IoChevronForward /></button>
 
-            {/* dots */}
             <div className="nh-dots">
               {slides.map((_, i) => (
-                <button
-                  key={i}
-                  className={`nh-dot ${i === current ? 'active' : ''}`}
-                  onClick={() => goTo(i)}
-                  aria-label={`slide ${i + 1}`}
-                />
+                <button key={i} className={`nh-dot ${i === current ? 'active' : ''}`} onClick={() => goTo(i)} />
               ))}
             </div>
           </div>
 
-          {/* SIDE NEWS */}
+          {/* SIDE NEWS — 6 items, scroll เต็มความสูง slider */}
           <div className="nh-side">
             {sideNews.map(item => (
               <Link to={`/news/${item._id}`} key={item._id} className="nh-side-item">
