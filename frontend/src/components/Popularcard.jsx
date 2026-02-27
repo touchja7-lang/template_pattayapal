@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import './Popularcard.css';
-import { HiOutlineClock, HiOutlineEye } from "react-icons/hi";
+import { IoArrowForward } from "react-icons/io5";
 import { newsAPI } from '../services/api';
+import './Popularcard.css';
 
 const PopularSection = () => {
   const [popularNews, setPopularNews] = useState([]);
@@ -20,30 +20,85 @@ const PopularSection = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="popularcard-loading">กำลังโหลด...</div>;
+  const getCategoryName = (cat) =>
+    cat && typeof cat === 'object' ? cat.name || 'ทั่วไป' : cat || 'ทั่วไป';
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+  };
+
+  if (loading) return (
+    <section className="ps-section">
+      <div className="ps-skeleton-header" />
+      <div className="ps-layout">
+        <div className="ps-skeleton-featured" />
+        <div className="ps-list">
+          {[...Array(4)].map((_, i) => <div key={i} className="ps-skeleton-item" />)}
+        </div>
+      </div>
+    </section>
+  );
+
+  if (popularNews.length === 0) return null;
+
+  const featured  = popularNews[0];
+  const sideItems = popularNews.slice(1);
 
   return (
-    <section className="popularcard-container">
-      <h2 className="popularcard-title">📊 ยอดนิยม</h2>
+    <section className="ps-section">
+      {/* Header */}
+      <div className="ps-header">
+        <div className="ps-header-left">
+          <div className="ps-header-bar" />
+          <h2 className="ps-title">ข่าวยอดนิยม</h2>
+        </div>
+        <Link to="/news" className="ps-view-all">
+          ดูทั้งหมด <IoArrowForward />
+        </Link>
+      </div>
 
-      <div className="popularcard-list">
-        {popularNews.map((item, index) => (
-          <Link to={`/news/${item._id}`} key={item._id} className="popularcard-item-link">
-            <div className="popularcard-item">
-              <div className={`popularcard-rank rank-${index + 1}`}>
-                {index + 1}
+      {/* Layout: featured left + list right */}
+      <div className="ps-layout">
+
+        {/* Featured card */}
+        <Link to={`/news/${featured._id}`} className="ps-featured">
+          <div className="ps-featured-img-wrap">
+            <img
+              src={featured.image || featured.thumbnail}
+              alt={featured.title}
+              className="ps-featured-img"
+              onError={(e) => { e.target.onerror = null; e.target.src = '/images/placeholder.png'; }}
+            />
+            <div className="ps-featured-overlay" />
+          </div>
+          <div className="ps-featured-body">
+            <h3 className="ps-featured-title">{featured.title}</h3>
+            <span className="ps-cat">{getCategoryName(featured.category)}</span>
+          </div>
+        </Link>
+
+        {/* Side list */}
+        <div className="ps-list">
+          {sideItems.map((item) => (
+            <Link to={`/news/${item._id}`} key={item._id} className="ps-item">
+              <div className="ps-item-img-wrap">
+                <img
+                  src={item.image || item.thumbnail}
+                  alt={item.title}
+                  className="ps-item-img"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/images/placeholder.png'; }}
+                />
               </div>
-              <div className="popularcard-content">
-                <h3 className="popularcard-item-title">{item.title}</h3>
-                <div className="popularcard-meta">
-                  <span className="popularcard-cat">{item.category?.name || 'ทั่วไป'}</span>
-                  <span className="popularcard-info"><HiOutlineClock /> {new Date(item.createdAt).toLocaleDateString('th-TH')}</span>
-                  <span className="popularcard-info"><HiOutlineEye /> {item.views || 0} ครั้ง</span>
-                </div>
+              <div className="ps-item-content">
+                <p className="ps-item-title">{item.title}</p>
+                <span className="ps-cat">{getCategoryName(item.category)}</span>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
