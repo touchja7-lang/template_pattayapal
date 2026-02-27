@@ -1,107 +1,334 @@
-/* Container หลัก: เว้นระยะห่างจากขอบจอ 4-5% เสมอ */
-.slider-container {
-    width: 92%;           /* คงที่ไว้ที่ 92% เพื่อให้เหลือขอบข้างละ 4% */
-    max-width: 1100px;
-    margin: 20px auto;    /* จัดกึ่งกลางหน้ากระดาษ */
-    border-radius: 20px;  /* คงความโค้งมนไว้ทุกอุปกรณ์เพื่อให้ดูนุ่มนวล */
-    overflow: hidden;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    background: #000;
+@import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&family=Noto+Serif+Thai:wght@600;700;800&display=swap');
+
+/* ================================================
+   VARIABLES
+   ================================================ */
+:root {
+  --isl-gold:     #c9a84c;
+  --isl-gold-lt:  #e8c97a;
+  --isl-dark:     #111111;
+  --isl-dark2:    #1a1a1a;
+  --isl-dark3:    #252525;
+  --isl-text:     #f0ece4;
+  --isl-text-dim: #a89f8f;
+  --isl-radius:   14px;
 }
 
-.slide-content {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    position: relative;
-    width: 100%;
-    height: 500px;        /* ความสูงมาตรฐานสำหรับจอคอม */
+/* ================================================
+   SECTION WRAPPER
+   ================================================ */
+.isl-section {
+  background: var(--isl-dark);
+  padding: 0 0 32px;
+  font-family: 'Sarabun', sans-serif;
 }
 
-/* บังคับรูปภาพให้เต็มกรอบและไม่เบี้ยว */
-.slide-content img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important; 
-    object-position: center;
-    display: block;
+/* ── LOADING ── */
+.isl-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  background: var(--isl-dark);
+  color: var(--isl-text-dim);
+  font-size: 15px;
+}
+.isl-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(201,168,76,0.2);
+  border-top-color: var(--isl-gold);
+  border-radius: 50%;
+  animation: isl-spin 0.8s linear infinite;
+}
+@keyframes isl-spin { to { transform: rotate(360deg); } }
+
+/* ================================================
+   HEADER
+   ================================================ */
+.isl-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+  background: linear-gradient(180deg, #1c1610 0%, var(--isl-dark) 100%);
 }
 
-/* จัดระเบียบข้อความบนภาพ */
-.slide-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 60px 30px 40px;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.3) 70%, transparent 100%);
-    color: white;
-    text-align: left;
-    z-index: 2;
+.isl-header-icon {
+  font-size: 22px;
+  color: var(--isl-gold);
+  line-height: 1;
+  text-shadow: 0 0 12px rgba(201,168,76,0.6);
 }
 
-.slide-title {
-    margin: 10px 0 12px;
-    font-size: clamp(1.3rem, 4vw, 2.2rem); 
-    font-weight: 700;
-    line-height: 1.2;
-    text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+.isl-header-title {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--isl-gold);
+  letter-spacing: 0.5px;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(201,168,76,0.3);
 }
 
-/* --- ระบบปุ่มควบคุม --- */
-.swiper-button-next, .swiper-button-prev {
-    background: rgba(255,255,255,0.2);
-    backdrop-filter: blur(5px);
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    color: white !important;
+/* ================================================
+   MAIN GRID
+   ================================================ */
+.isl-grid {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 20px;
+  padding: 20px 28px 0;
+  max-width: 1280px;
+  margin: 0 auto;
 }
 
-/* 📱 --- Responsive สำหรับ Tablet --- */
+/* ================================================
+   FEATURED (LEFT)
+   ================================================ */
+.isl-featured {
+  position: relative;
+  border-radius: var(--isl-radius);
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+  aspect-ratio: 16/10;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.isl-featured:hover {
+  transform: scale(1.01);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+}
+
+.isl-featured-img-wrap {
+  position: absolute;
+  inset: 0;
+}
+.isl-featured-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+.isl-featured:hover .isl-featured-img {
+  transform: scale(1.04);
+}
+
+.isl-featured-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.92) 0%,
+    rgba(0,0,0,0.5)  45%,
+    rgba(0,0,0,0.1)  100%
+  );
+}
+
+.isl-featured-body {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.isl-time {
+  display: inline-block;
+  background: rgba(180,30,30,0.9);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 5px;
+  width: fit-content;
+  letter-spacing: 0.3px;
+}
+
+.isl-cat-tag {
+  display: none; /* ซ่อนบน featured เพราะรกเกินไป */
+}
+
+.isl-featured-title {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: clamp(16px, 2.2vw, 22px);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.5;
+  margin: 0;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+.isl-meta {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+}
+
+/* ================================================
+   SIDE LIST (RIGHT)
+   ================================================ */
+.isl-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.isl-side-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--isl-gold);
+  margin-bottom: 4px;
+}
+
+.isl-side-title {
+  font-family: 'Noto Serif Thai', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--isl-text);
+  margin: 0;
+}
+
+.isl-side-more {
+  font-size: 13px;
+  color: var(--isl-gold);
+  text-decoration: none;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.isl-side-more:hover { color: var(--isl-gold-lt); }
+
+/* Side items */
+.isl-side-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.isl-side-item {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  text-decoration: none;
+  transition: background 0.15s;
+  border-radius: 8px;
+}
+.isl-side-item:last-child { border-bottom: none; }
+.isl-side-item:hover { background: rgba(255,255,255,0.04); padding-left: 6px; }
+
+.isl-side-img-wrap {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  flex-shrink: 0;
+}
+.isl-side-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s;
+}
+.isl-side-item:hover .isl-side-img { transform: scale(1.06); }
+
+.isl-side-time {
+  position: absolute;
+  bottom: 5px; left: 5px;
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.isl-side-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.isl-side-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--isl-text);
+  line-height: 1.55;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.isl-side-views {
+  font-size: 12px;
+  color: var(--isl-text-dim);
+}
+
+/* ================================================
+   RESPONSIVE
+   ================================================ */
+
+/* Tablet */
 @media (max-width: 1024px) {
-    .slider-container {
-        width: 94%;       /* เพิ่มพื้นที่แสดงผลนิดหน่อยแต่ยังไม่ชิดขอบ */
-    }
-    .slide-content {
-        height: 400px;
-    }
+  .isl-grid {
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+    padding: 16px 20px 0;
+  }
+  .isl-header { padding: 16px 20px 14px; }
 }
 
-/* 📱 --- Responsive สำหรับ Mobile (เน้นไม่ชิดขอบ) --- */
+/* Mobile: stack vertically */
 @media (max-width: 768px) {
-    .slider-container {
-        width: 92%;       /* บังคับให้เหลือขอบขาวข้างละ 4% เสมอ */
-        margin: 15px auto;
-        border-radius: 15px; /* ลดความโค้งลงเล็กน้อยให้รับกับจอเล็ก */
-    }
+  .isl-grid {
+    grid-template-columns: 1fr;
+    padding: 12px 14px 0;
+  }
 
-    .slide-content {
-        height: 320px;     /* ปรับความสูงให้สมดุลกับมือถือ */
-    }
+  .isl-featured {
+    aspect-ratio: 16/9;
+  }
 
-    .slide-overlay {
-        padding: 30px 20px 35px;
-    }
+  .isl-featured-title {
+    font-size: 16px;
+  }
 
-    .slide-title {
-        font-size: 1.3rem;
-        line-height: 1.3;
-    }
+  .isl-side-header { padding-bottom: 10px; }
+  .isl-side-title  { font-size: 16px; }
 
-    /* ซ่อนปุ่มลูกศรในมือถือเพื่อไม่ให้ทับเนื้อหา */
-    .swiper-button-next, .swiper-button-prev {
-        display: none !important;
-    }
+  .isl-side-item {
+    grid-template-columns: 90px 1fr;
+    gap: 10px;
+    padding: 10px 0;
+  }
+
+  .isl-side-item-title { font-size: 13px; -webkit-line-clamp: 2; }
+
+  .isl-header-title { font-size: 18px; }
+  .isl-header { padding: 14px 14px 12px; }
 }
 
-/* สำหรับมือถือจอเล็กมาก (iPhone SE) */
 @media (max-width: 480px) {
-    .slider-container {
-        width: 90%;       /* เว้นขอบมากขึ้นอีกนิดเพื่อให้ดูเด่น */
-    }
-    .slide-content {
-        height: 260px;
-    }
+  .isl-grid { padding: 10px 10px 0; }
+
+  .isl-side-item {
+    grid-template-columns: 80px 1fr;
+    gap: 8px;
+  }
+
+  .isl-featured-body { padding: 14px 14px; }
+  .isl-featured-title { font-size: 15px; }
 }
