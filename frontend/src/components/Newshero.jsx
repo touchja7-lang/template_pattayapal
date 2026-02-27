@@ -20,8 +20,10 @@ const NewsHero = ({ currentCategory = '' }) => {
           categoryAPI.getAll(),
         ]);
         const all = Array.isArray(newsRes.data) ? newsRes.data : [];
-        setSlides(all.slice(0, 5));
-        setSideNews(all.slice(5, 15)); // ดึง 10 รายการ เพื่อเติมเต็มความสูง slider
+        const sliderNews = all.slice(0, 5);
+        const sideItems  = all.length > 5 ? all.slice(5) : all;
+        setSlides(sliderNews);
+        setSideNews(sideItems);
         setCategories(catRes.data || []);
       } catch (err) {
         console.error('NewsHero fetch error:', err);
