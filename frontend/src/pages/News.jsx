@@ -7,6 +7,7 @@ import PopularNews from '../components/Popularnews';
 import Footer from '../components/Footer';
 import CategoryFilter from '../components/CategoryFilter';
 import '../css/News.css';
+import NewsHero from '../components/Newshero';
 
 function News() {
   const location = useLocation();
@@ -57,7 +58,7 @@ function News() {
   return (
     <div>
       <Navbar />
-      <ImageSlider />
+      <NewsHero />
 
       <div className="news-page-container">
         <div className="news-header">
