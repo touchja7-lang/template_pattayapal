@@ -75,7 +75,6 @@ function CategoryNews() {
 
           {/* Title */}
           <div className="cn-hero-title-row">
-            <div className="cn-hero-icon">{categoryName.charAt(0)}</div>
             <div>
               <p className="cn-hero-label">หมวดหมู่ข่าว</p>
               <h1 className="cn-hero-title">{categoryName}</h1>
