@@ -142,38 +142,32 @@
 .nd-hero {
   position: relative;
   width: 100%;
-  height: 75vh;
-  min-height: 460px;
-  max-height: 680px;
-  overflow: hidden;
-  margin-bottom: -60px; /* card overlaps hero */
+  background: #000;
+  margin-bottom: 0;
 }
 
 .nd-hero-img-wrap {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  line-height: 0;
 }
 .nd-hero-img {
-  width: 100%; height: 100%;
-  object-fit: cover; display: block;
-  animation: nd-hero-zoom 8s ease-in-out infinite alternate;
-}
-@keyframes nd-hero-zoom {
-  from { transform: scale(1);    }
-  to   { transform: scale(1.04); }
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
 }
 
 .nd-hero-vignette {
   position: absolute; inset: 0;
-  background:
-    linear-gradient(to bottom,
-      rgba(0,0,0,0.15) 0%,
-      transparent      30%,
-      transparent      40%,
-      rgba(0,0,0,0.80) 100%),
-    linear-gradient(to right,
-      rgba(0,0,0,0.08) 0%,
-      transparent      40%);
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.25) 0%,
+    transparent 25%,
+    transparent 45%,
+    rgba(0,0,0,0.85) 100%
+  );
+  pointer-events: none;
 }
 
 /* Frosted glass back button */
@@ -201,15 +195,15 @@
   transform: translateX(-3px);
 }
 
-/* Title block pinned to hero bottom */
+/* Title block ซ้อนด้านล่างของรูป */
 .nd-hero-body {
   position: absolute;
-  bottom: 80px; left: 0; right: 0;
-  padding: 0 clamp(20px, 5vw, 120px);
+  bottom: 0; left: 0; right: 0;
+  padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 80px) clamp(24px, 3vw, 40px);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-width: 900px;
+  gap: 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, transparent 100%);
 }
 
 .nd-cat-pill {
@@ -622,8 +616,7 @@
 }
 
 @media (max-width: 768px) {
-  .nd-hero      { height: 60vh; min-height: 380px; margin-bottom: -40px; }
-  .nd-hero-body { bottom: 56px; padding: 0 20px; gap: 10px; }
+  .nd-hero-body { padding: 32px 20px 20px; gap: 8px; }
   .nd-title     { font-size: 22px; }
   .nd-card      { padding: 28px 22px; border-radius: 16px; }
   .nd-card-wrap { padding: 0 14px 48px; }
@@ -638,8 +631,7 @@
 }
 
 @media (max-width: 480px) {
-  .nd-hero      { height: 55vh; min-height: 320px; }
-  .nd-hero-body { bottom: 48px; padding: 0 16px; }
+  .nd-hero-body { padding: 24px 14px 16px; }
   .nd-title     { font-size: 19px; }
   .nd-card      { padding: 22px 16px; border-radius: 14px; }
   .nd-card-wrap { padding: 0 10px 36px; }
