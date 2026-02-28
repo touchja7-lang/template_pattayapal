@@ -290,9 +290,10 @@
   color: #16a34a;
   border-bottom-color: #16a34a;
 }
-.nb-cat-link.all {
+.nb-cat-link.active {
   font-weight: 700;
   color: #16a34a;
+  border-bottom-color: #16a34a;
 }
 
 /* ================================================
@@ -354,9 +355,13 @@
   padding: 12px 20px;
   transition: background 0.12s;
 }
-.nb-drawer-link:hover {
+.nb-drawer-link:hover,
+.nb-drawer-link.active {
   background: #f5fdf7;
   color: #16a34a;
+}
+.nb-drawer-link.active {
+  font-weight: 700;
 }
 
 .nb-drawer-section-title {
@@ -376,10 +381,12 @@
   padding: 9px 20px 9px 28px;
   transition: background 0.12s;
 }
-.nb-drawer-cat:hover {
+.nb-drawer-cat:hover,
+.nb-drawer-cat.active {
   background: #f5fdf7;
   color: #16a34a;
 }
+.nb-drawer-cat.active { font-weight: 600; }
 
 /* ================================================
    ANIMATIONS
