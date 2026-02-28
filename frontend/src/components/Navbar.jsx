@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IoPerson, IoSettingsOutline, IoMenu, IoClose, IoLogOut } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { categoryAPI } from '../services/api';
 import './Navbar.css';
@@ -9,6 +9,7 @@ import './Navbar.css';
 function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location  = useLocation();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -44,6 +45,13 @@ function Navbar() {
       setShowMobileMenu(false);
     }
   };
+
+  /* ── ตรวจ active ── */
+  const path = location.pathname;
+  const isAllActive = path === '/news';
+  const activeCat   = path.startsWith('/news/category/')
+    ? decodeURIComponent(path.split('/news/category/')[1])
+    : null;
 
   return (
     <>
@@ -117,12 +125,12 @@ function Navbar() {
 
         {/* ── CATEGORY BAR ── */}
         <div className="nb-cats">
-          <Link to="/news" className="nb-cat-link all">ข่าวทั้งหมด</Link>
+          <Link to="/news" className={`nb-cat-link${isAllActive ? ' active' : ''}`}>ข่าวทั้งหมด</Link>
           {categories.map(cat => (
             <Link
               key={cat._id}
               to={`/news/category/${encodeURIComponent(cat.name)}`}
-              className="nb-cat-link"
+              className={`nb-cat-link${activeCat === cat.name ? ' active' : ''}`}
             >
               {cat.name}
             </Link>
@@ -162,7 +170,7 @@ function Navbar() {
               </button>
             </div>
             <div className="nb-drawer-links">
-              <Link to="/news" className="nb-drawer-link" onClick={() => setShowMobileMenu(false)}>
+              <Link to="/news" className={`nb-drawer-link${isAllActive ? ' active' : ''}`} onClick={() => setShowMobileMenu(false)}>
                 ข่าวทั้งหมด
               </Link>
               {categories.length > 0 && (
@@ -172,7 +180,7 @@ function Navbar() {
                     <Link
                       key={cat._id}
                       to={`/news/category/${encodeURIComponent(cat.name)}`}
-                      className="nb-drawer-cat"
+                      className={`nb-drawer-cat${activeCat === cat.name ? ' active' : ''}`}
                       onClick={() => setShowMobileMenu(false)}
                     >
                       {cat.name}
