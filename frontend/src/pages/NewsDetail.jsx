@@ -4,38 +4,76 @@ import DOMPurify from 'dompurify';
 import api from '../services/api.js';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { HiOutlineCalendar, HiOutlineEye } from "react-icons/hi";
+import { HiOutlineCalendar, HiOutlineEye } from 'react-icons/hi';
 import { IoArrowBack, IoChevronForward,
          IoPlayCircle, IoPauseCircle, IoStopCircle,
-         IoVolumeHigh } from "react-icons/io5";
+         IoVolumeHigh, IoWarningOutline } from 'react-icons/io5';
+import { elevenLabsSpeak, THAI_VOICE_ID } from '../services/elevenLabsTTS.js';
 import '../css/NewsDetail.css';
 
-/* ── ดึง text ล้วนออกจาก HTML string ── */
+/* ── strip HTML tags ── */
 const stripHtml = (html) => {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
+  return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+};
+
+/* ── แบ่งข้อความเป็น chunks ~500 chars ตัดที่ประโยค ──
+   ElevenLabs รองรับสูงสุด 5000 chars/request
+   เราใช้ 500 เพื่อให้ preload chunk ถัดไปได้ทัน ไม่มีช่องว่าง ── */
+const splitChunks = (text, maxLen = 500) => {
+  const chunks = [];
+  // ตัดที่ ., !, ?, ฯ, \n  แล้ว trim
+  const sentences = text.match(/[^.!?\nฯ]+[.!?\nฯ]*/g) || [text];
+  let buf = '';
+  for (const s of sentences) {
+    if (buf.length + s.length > maxLen && buf.length > 0) {
+      chunks.push(buf.trim());
+      buf = s;
+    } else {
+      buf += s;
+    }
+  }
+  if (buf.trim()) chunks.push(buf.trim());
+  return chunks.filter(Boolean);
+};
+
+/* ── TTS states ── */
+const S = {
+  IDLE:    'idle',
+  LOADING: 'loading',
+  PLAYING: 'playing',
+  PAUSED:  'paused',
+  ERROR:   'error',
 };
 
 function NewsDetail() {
   const { id } = useParams();
+
+  /* ── news ── */
   const [news, setNews]                     = useState(null);
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  /* ── TTS state ── */
-  const [ttsPlaying, setTtsPlaying]   = useState(false);
-  const [ttsPaused, setTtsPaused]     = useState(false);
-  const [ttsSupport, setTtsSupport]   = useState(false);
-  const [ttsRate, setTtsRate]         = useState(1);
-  const uttRef = useRef(null);
+  /* ── TTS ── */
+  const [ttsState, setTtsState]             = useState(S.IDLE);
+  const [ttsError, setTtsError]             = useState('');
+  const [ttsSpeed, setTtsSpeed]             = useState(1.0);
+  const [ttsDuration, setTtsDuration]       = useState(0);   // total estimated duration
+  const [ttsCurrentTime, setTtsCurrentTime] = useState(0);
 
-  /* ── check browser support ── */
-  useEffect(() => {
-    setTtsSupport('speechSynthesis' in window);
-    return () => window.speechSynthesis.cancel();   // cleanup on unmount
-  }, []);
+  // chunk queue
+  const chunksRef     = useRef([]);     // array ของ text chunks
+  const chunkIdxRef   = useRef(0);      // chunk ที่กำลังเล่น
+  const stoppedRef    = useRef(false);  // flag หยุดจริง
+  const pausedRef     = useRef(false);  // flag pause
+
+  // audio
+  const audioRef      = useRef(null);   // Audio ที่กำลังเล่น
+  const nextAudioRef  = useRef(null);   // Audio ที่ preload ไว้แล้ว
+  const blobUrlsRef   = useRef([]);     // เก็บ URLs ทั้งหมดเพื่อ revoke
+  const intervalRef   = useRef(null);   // progress tracker
 
   /* ── fetch news ── */
   useEffect(() => {
@@ -43,11 +81,11 @@ function NewsDetail() {
       try {
         setLoading(true);
         setError(false);
-        const response = await api.get(`/news/${id}`);
-        if (response.data) setNews(response.data);
-        else throw new Error('No data returned');
+        const res = await api.get(`/news/${id}`);
+        if (res.data) setNews(res.data);
+        else throw new Error('No data');
       } catch (err) {
-        console.error('ไม่พบข่าวใน DB:', err);
+        console.error('NewsDetail:', err);
         setError(true);
       } finally {
         setLoading(false);
@@ -55,86 +93,212 @@ function NewsDetail() {
     };
     fetchNews();
     window.scrollTo(0, 0);
-    // stop TTS when navigating to another article
-    return () => {
-      window.speechSynthesis.cancel();
-      setTtsPlaying(false);
-      setTtsPaused(false);
-    };
+    return () => stopAudio();
   }, [id]);
 
   /* ── scroll progress ── */
   useEffect(() => {
-    const handleScroll = () => {
+    const onScroll = () => {
       const el = document.documentElement;
-      const scrollTop    = el.scrollTop || document.body.scrollTop;
-      const scrollHeight = el.scrollHeight - el.clientHeight;
-      setScrollProgress(scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0);
+      const top    = el.scrollTop || document.body.scrollTop;
+      const height = el.scrollHeight - el.clientHeight;
+      setScrollProgress(height > 0 ? (top / height) * 100 : 0);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  /* ════════════════════════════
-     TTS CONTROLS
-  ════════════════════════════ */
-  const ttsPlay = useCallback(() => {
+  /* ════════════════════════════════════════════════
+     TTS — ElevenLabs chunk queue with preload
+     ─────────────────────────────────────────────
+     วิธีทำงาน:
+       1. แบ่งข้อความเป็น chunks ~500 chars
+       2. โหลด chunk[0] จาก ElevenLabs → เล่นทันที
+       3. ระหว่างเล่น chunk[i] → preload chunk[i+1] ไว้พร้อม
+       4. เมื่อ chunk[i] จบ → สลับไปเล่น chunk[i+1] ทันที (ไม่มี gap)
+       5. ทำซ้ำจนหมด
+  ════════════════════════════════════════════════ */
+
+  /* revoke blob URLs ทั้งหมดที่สร้างไว้ */
+  const revokeAllBlobs = useCallback(() => {
+    blobUrlsRef.current.forEach(u => URL.revokeObjectURL(u));
+    blobUrlsRef.current = [];
+  }, []);
+
+  /* หยุดทั้งหมด + reset state */
+  const stopAudio = useCallback(() => {
+    stoppedRef.current = true;
+    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+    if (audioRef.current)    { audioRef.current.onended = null; audioRef.current.onerror = null;
+                                audioRef.current.pause(); audioRef.current = null; }
+    if (nextAudioRef.current){ nextAudioRef.current.src = ''; nextAudioRef.current = null; }
+    revokeAllBlobs();
+    chunksRef.current   = [];
+    chunkIdxRef.current = 0;
+    setTtsState(S.IDLE);
+    setTtsCurrentTime(0);
+    setTtsDuration(0);
+  }, [revokeAllBlobs]);
+
+  /* โหลด chunk index ที่กำหนดจาก ElevenLabs → return Audio object */
+  const loadChunk = useCallback(async (idx, speed) => {
+    const chunk = chunksRef.current[idx];
+    if (!chunk) return null;
+    const { audioUrl } = await elevenLabsSpeak({
+      text:       chunk,
+      voiceId:    THAI_VOICE_ID,
+      stability:  0.5,
+      similarity: 0.75,
+      speed:      1.0,   // speed ควบคุมด้วย playbackRate แทน ให้คุณภาพดีกว่า
+    });
+    blobUrlsRef.current.push(audioUrl);
+    const audio = new Audio(audioUrl);
+    audio.playbackRate = speed;
+    return audio;
+  }, []);
+
+  /* เล่น chunk ที่ idx — เมื่อจบจะเล่น chunk ถัดไปอัตโนมัติ */
+  const playChunk = useCallback((audio, idx, speed) => {
+    if (!audio || stoppedRef.current) return;
+    audioRef.current = audio;
+
+    /* preload chunk ถัดไปทันที (ทำงานในพื้นหลังขณะกำลังเล่น) */
+    const nextIdx = idx + 1;
+    if (nextIdx < chunksRef.current.length && !nextAudioRef.current) {
+      loadChunk(nextIdx, speed).then(nextAudio => {
+        if (!stoppedRef.current) nextAudioRef.current = nextAudio;
+      }).catch(() => {});
+    }
+
+    audio.playbackRate = speed;
+
+    audio.onplay = () => {
+      if (idx === 0) {
+        /* เริ่มนับ progress tracker ตอน chunk แรกเริ่มเล่น */
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(() => {
+          setTtsCurrentTime(prev => prev + 0.4);
+        }, 400);
+        setTtsState(S.PLAYING);
+      }
+    };
+
+    audio.onended = () => {
+      if (stoppedRef.current) return;
+      if (pausedRef.current)  return;
+
+      chunkIdxRef.current = nextIdx;
+
+      if (nextIdx >= chunksRef.current.length) {
+        /* จบทั้งหมด */
+        clearInterval(intervalRef.current);
+        revokeAllBlobs();
+        setTtsState(S.IDLE);
+        setTtsCurrentTime(0);
+        return;
+      }
+
+      /* ถ้า preload เสร็จแล้ว → เล่นต่อได้เลย ไม่มี gap */
+      if (nextAudioRef.current) {
+        const next = nextAudioRef.current;
+        nextAudioRef.current = null;
+        playChunk(next, nextIdx, speed);
+      } else {
+        /* preload ยังไม่เสร็จ → รอโหลด (ไม่ควรเกิดบ่อย) */
+        loadChunk(nextIdx, speed).then(next => {
+          if (!stoppedRef.current && next) playChunk(next, nextIdx, speed);
+        }).catch(() => { setTtsState(S.ERROR); setTtsError('โหลดเสียงไม่สำเร็จ'); });
+      }
+    };
+
+    audio.onerror = () => {
+      if (stoppedRef.current) return;
+      clearInterval(intervalRef.current);
+      setTtsState(S.ERROR);
+      setTtsError('ไม่สามารถเล่นเสียงได้');
+    };
+
+    audio.play().catch(() => {
+      if (!stoppedRef.current) { setTtsState(S.ERROR); setTtsError('ไม่สามารถเล่นเสียงได้'); }
+    });
+  }, [loadChunk, revokeAllBlobs]);
+
+  /* ── เริ่มเล่น ── */
+  const handlePlay = useCallback(async () => {
     if (!news) return;
-    window.speechSynthesis.cancel();
+    stopAudio();
+    stoppedRef.current  = false;
+    pausedRef.current   = false;
+    chunkIdxRef.current = 0;
+    setTtsError('');
+    setTtsState(S.LOADING);
 
-    const text = `${news.title}. ${stripHtml(news.content || '')}`;
-    const utt  = new SpeechSynthesisUtterance(text);
+    const fullText = `${news.title}. ${stripHtml(news.content || '')}`;
+    chunksRef.current = splitChunks(fullText, 500);
 
-    // เลือก voice ภาษาไทยถ้ามี
-    const voices = window.speechSynthesis.getVoices();
-    const thVoice = voices.find(v => v.lang === 'th-TH') ||
-                    voices.find(v => v.lang.startsWith('th'));
-    if (thVoice) utt.voice = thVoice;
+    /* ประมาณ duration รวม (Thai: ~3 chars/วินาที) */
+    const estSec = Math.ceil(fullText.length / (3 * (ttsSpeed || 1)));
+    setTtsDuration(estSec);
 
-    utt.lang  = 'th-TH';
-    utt.rate  = ttsRate;
-    utt.pitch = 1;
-
-    utt.onstart  = () => { setTtsPlaying(true);  setTtsPaused(false); };
-    utt.onpause  = () => { setTtsPaused(true); };
-    utt.onresume = () => { setTtsPaused(false); };
-    utt.onend    = () => { setTtsPlaying(false); setTtsPaused(false); };
-    utt.onerror  = () => { setTtsPlaying(false); setTtsPaused(false); };
-
-    uttRef.current = utt;
-    window.speechSynthesis.speak(utt);
-  }, [news, ttsRate]);
-
-  const ttsPause = () => {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      setTtsPaused(true);
+    try {
+      const firstAudio = await loadChunk(0, ttsSpeed);
+      if (!stoppedRef.current && firstAudio) playChunk(firstAudio, 0, ttsSpeed);
+      else if (!stoppedRef.current) { setTtsState(S.ERROR); setTtsError('โหลดเสียงไม่สำเร็จ'); }
+    } catch (err) {
+      if (!stoppedRef.current) {
+        setTtsState(S.ERROR);
+        setTtsError(err.message || 'โหลดเสียงไม่สำเร็จ');
+      }
     }
-  };
+  }, [news, ttsSpeed, stopAudio, loadChunk, playChunk]);
 
-  const ttsResume = () => {
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
-      setTtsPaused(false);
+  /* ── หยุดชั่วคราว ── */
+  const handlePause = useCallback(() => {
+    if (audioRef.current) {
+      pausedRef.current = true;
+      audioRef.current.pause();
+      clearInterval(intervalRef.current);
+      setTtsState(S.PAUSED);
     }
-  };
+  }, []);
 
-  const ttsStop = () => {
-    window.speechSynthesis.cancel();
-    setTtsPlaying(false);
-    setTtsPaused(false);
-  };
-
-  const handleRateChange = (newRate) => {
-    setTtsRate(newRate);
-    if (ttsPlaying) {
-      ttsStop();
-      setTimeout(() => ttsPlay(), 100);
+  /* ── เล่นต่อ ── */
+  const handleResume = useCallback(() => {
+    if (audioRef.current) {
+      pausedRef.current = false;
+      audioRef.current.play();
+      intervalRef.current = setInterval(() => {
+        setTtsCurrentTime(prev => prev + 0.4);
+      }, 400);
+      setTtsState(S.PLAYING);
     }
+  }, []);
+
+  /* ── หยุดเลย ── */
+  const handleStop = useCallback(() => stopAudio(), [stopAudio]);
+
+  /* ── เปลี่ยนความเร็ว (ขณะเล่น → ปรับ playbackRate ได้เลย) ── */
+  const handleSpeedChange = useCallback((speed) => {
+    setTtsSpeed(speed);
+    if (audioRef.current)    audioRef.current.playbackRate    = speed;
+    if (nextAudioRef.current) nextAudioRef.current.playbackRate = speed;
+  }, []);
+
+  /* ── helpers ── */
+  const fmtTime = (s) => {
+    if (!s || isNaN(s)) return '0:00';
+    return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   };
+  const progressPct = ttsDuration > 0 ? (ttsCurrentTime / ttsDuration) * 100 : 0;
+
+  const isLoading = ttsState === S.LOADING;
+  const isPlaying = ttsState === S.PLAYING;
+  const isPaused  = ttsState === S.PAUSED;
+  const isActive  = isPlaying || isPaused;
+  const isError   = ttsState === S.ERROR;
 
   /* ════════════════════════════
-     RENDER STATES
+     LOADING / ERROR SCREENS
   ════════════════════════════ */
   if (loading) return (
     <div className="nd-root">
@@ -174,7 +338,7 @@ function NewsDetail() {
 
       <main className="nd-main">
 
-        {/* ── HERO ── */}
+        {/* ══ HERO ══ */}
         <div className="nd-hero">
           <div className="nd-hero-img-wrap">
             <img
@@ -197,7 +361,7 @@ function NewsDetail() {
           </div>
         </div>
 
-        {/* ── ARTICLE CARD ── */}
+        {/* ══ ARTICLE CARD ══ */}
         <div className="nd-card-wrap">
           <div className="nd-card">
 
@@ -209,78 +373,121 @@ function NewsDetail() {
               <IoChevronForward className="nd-bc-arrow" />
               <span className="nd-bc-current">{categoryLabel}</span>
             </div>
-
             <div className="nd-card-divider" />
 
-            {/* ════════════════════════════
-                TTS PLAYER BAR
-            ════════════════════════════ */}
-            {ttsSupport && (
-              <div className={`nd-tts-bar ${ttsPlaying ? 'nd-tts-active' : ''}`}>
-                <div className="nd-tts-left">
-                  <IoVolumeHigh className="nd-tts-icon" />
-                  <div>
-                    <p className="nd-tts-label">ฟังข่าวนี้</p>
-                    <p className="nd-tts-sublabel">
-                      {ttsPlaying
-                        ? ttsPaused ? 'หยุดชั่วคราว...' : 'กำลังอ่าน...'
-                        : 'อ่านออกเสียงโดย AI'}
-                    </p>
-                  </div>
-                </div>
+            {/* ══════════════════════════════
+                TTS PLAYER — ElevenLabs
+            ══════════════════════════════ */}
+            <div className={`nd-tts-bar
+              ${isActive  ? 'nd-tts-active'      : ''}
+              ${isLoading ? 'nd-tts-loading-state' : ''}
+              ${isError   ? 'nd-tts-error-state'  : ''}
+            `}>
 
-                <div className="nd-tts-center">
-                  {/* Play / Pause / Resume */}
-                  {!ttsPlaying ? (
-                    <button className="nd-tts-btn play" onClick={ttsPlay} title="เล่น">
+              {/* Left */}
+              <div className="nd-tts-left">
+                <div className={`nd-tts-icon-wrap ${isPlaying ? 'nd-tts-icon-pulse' : ''}`}>
+                  <IoVolumeHigh className="nd-tts-icon" />
+                </div>
+                <div>
+                  <p className="nd-tts-label">ฟังข่าวนี้</p>
+                  <p className="nd-tts-sublabel">
+                    {isLoading ? 'กำลังสังเคราะห์เสียง...'
+                      : isPlaying ? 'กำลังอ่าน...'
+                      : isPaused  ? 'หยุดชั่วคราว'
+                      : isError   ? 'เกิดข้อผิดพลาด'
+                      : 'ขับเคลื่อนโดย ElevenLabs AI'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Center */}
+              <div className="nd-tts-center">
+                <div className="nd-tts-controls">
+                  {/* loading spinner */}
+                  {isLoading && <div className="nd-tts-spinner" />}
+
+                  {/* play */}
+                  {!isLoading && !isActive && (
+                    <button className="nd-tts-btn play" onClick={handlePlay} title="เล่น">
                       <IoPlayCircle />
                     </button>
-                  ) : ttsPaused ? (
-                    <button className="nd-tts-btn play" onClick={ttsResume} title="เล่นต่อ">
-                      <IoPlayCircle />
-                    </button>
-                  ) : (
-                    <button className="nd-tts-btn pause" onClick={ttsPause} title="หยุดชั่วคราว">
+                  )}
+                  {/* pause */}
+                  {isPlaying && (
+                    <button className="nd-tts-btn pause" onClick={handlePause} title="หยุดชั่วคราว">
                       <IoPauseCircle />
                     </button>
                   )}
-                  {/* Stop */}
-                  {ttsPlaying && (
-                    <button className="nd-tts-btn stop" onClick={ttsStop} title="หยุด">
+                  {/* resume */}
+                  {isPaused && (
+                    <button className="nd-tts-btn play" onClick={handleResume} title="เล่นต่อ">
+                      <IoPlayCircle />
+                    </button>
+                  )}
+                  {/* stop */}
+                  {isActive && (
+                    <button className="nd-tts-btn stop" onClick={handleStop} title="หยุด">
                       <IoStopCircle />
                     </button>
                   )}
-
-                  {/* waveform animation while playing */}
-                  {ttsPlaying && !ttsPaused && (
-                    <div className="nd-tts-wave">
-                      <span /><span /><span /><span /><span />
-                    </div>
+                  {/* retry */}
+                  {isError && (
+                    <button className="nd-tts-btn play" onClick={handlePlay} title="ลองใหม่">
+                      <IoPlayCircle />
+                    </button>
                   )}
                 </div>
 
-                {/* Speed selector */}
-                <div className="nd-tts-right">
-                  <span className="nd-tts-speed-label">ความเร็ว</span>
-                  <div className="nd-tts-speeds">
-                    {[0.75, 1, 1.25, 1.5].map(r => (
-                      <button
-                        key={r}
-                        className={`nd-tts-speed ${ttsRate === r ? 'active' : ''}`}
-                        onClick={() => handleRateChange(r)}
-                      >
-                        {r}×
-                      </button>
-                    ))}
+                {/* progress bar + time */}
+                {isActive && ttsDuration > 0 && (
+                  <div className="nd-tts-progress-wrap">
+                    <div className="nd-tts-progress-track">
+                      <div className="nd-tts-progress-fill" style={{ width: `${progressPct}%` }} />
+                    </div>
+                    <div className="nd-tts-time">
+                      <span>{fmtTime(ttsCurrentTime)}</span>
+                      <span>{fmtTime(ttsDuration)}</span>
+                    </div>
                   </div>
+                )}
+
+                {/* waveform */}
+                {isPlaying && (
+                  <div className="nd-tts-wave">
+                    <span /><span /><span /><span /><span />
+                  </div>
+                )}
+              </div>
+
+              {/* Right: speed */}
+              <div className="nd-tts-right">
+                <span className="nd-tts-speed-label">ความเร็ว</span>
+                <div className="nd-tts-speeds">
+                  {[0.75, 1, 1.25, 1.5].map(r => (
+                    <button
+                      key={r}
+                      className={`nd-tts-speed ${ttsSpeed === r ? 'active' : ''}`}
+                      onClick={() => handleSpeedChange(r)}
+                    >
+                      {r}×
+                    </button>
+                  ))}
                 </div>
+              </div>
+            </div>
+
+            {/* error message */}
+            {isError && ttsError && (
+              <div className="nd-tts-error-msg">
+                <IoWarningOutline /> {ttsError}
               </div>
             )}
 
-            {/* Article body */}
+            {/* Article */}
             <article className="nd-body" dangerouslySetInnerHTML={{ __html: safeContent }} />
 
-            {/* Footer nav */}
+            {/* Footer */}
             <div className="nd-card-footer">
               <Link to="/news" className="nd-footer-btn">
                 <IoArrowBack /><span>กลับหน้าข่าวสารทั้งหมด</span>
