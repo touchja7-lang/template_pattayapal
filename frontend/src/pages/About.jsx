@@ -32,7 +32,7 @@ function About() {
         <div style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#555', marginTop: '20px' }}>
           <p>{content}</p>
           <p style={{ marginTop: '20px' }}>
-            ขอขอบคุณที่ไว้วางใจและติดตาม Pattayapal แหล่งข่าวสารออนไลน์อันดับหนึ่งของคนพัทยา
+            ขอขอบคุณที่ไว้วางใจและติดตาม อธิปบูรพา แหล่งข่าวสารออนไลน์อันดับหนึ่งของคนพัทยา
           </p>
         </div>
       </div>
