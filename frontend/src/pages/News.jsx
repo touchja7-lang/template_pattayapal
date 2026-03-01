@@ -18,13 +18,12 @@ function News() {
   const queryParams   = new URLSearchParams(location.search);
   const searchFromUrl = queryParams.get('search') || '';
 
-  const [newsList, setNewsList]                   = useState([]);
-  const [categories, setCategories]               = useState([]);
-  const [selectedCategory, setSelectedCategory]   = useState('');
-  const [loading, setLoading]                     = useState(true);
-  const [searchTerm, setSearchTerm]               = useState(searchFromUrl);
+  const [newsList, setNewsList]                 = useState([]);
+  const [categories, setCategories]             = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [loading, setLoading]                   = useState(true);
+  const [searchTerm, setSearchTerm]             = useState(searchFromUrl);
 
-  // ── แปลภาษา real-time ──────────────────────────────────────────────────────
   const { data: displayNews, translating } = useTranslatedNews(newsList);
 
   useEffect(() => {
@@ -65,7 +64,6 @@ function News() {
 
       <div className="news-page-container">
 
-        {/* ── translating banner ── */}
         {translating && (
           <div className="news-translating-bar">
             <span className="news-translating-spinner" />
@@ -73,7 +71,6 @@ function News() {
           </div>
         )}
 
-        {/* ── search result banner ── */}
         {searchTerm && (
           <div className="news-search-banner">
             <span>{t('news_search_result')} <strong>"{searchTerm}"</strong></span>
@@ -83,7 +80,6 @@ function News() {
           </div>
         )}
 
-        {/* ── CategoryFilter ── */}
         {loading ? (
           <div className="news-loading">
             <div className="news-loading-spinner" />
@@ -99,13 +95,13 @@ function News() {
               const cat = categories.find(c => c.name === catName);
               setSelectedCategory(cat ? cat._id : '');
             }}
-            news={displayNews}  {/* ← ส่ง displayNews แทน newsList */}
+            news={displayNews}
           />
         )}
 
       </div>
 
-      <PopularSection news={displayNews} />  {/* ← ส่ง displayNews แทน newsList */}
+      <PopularSection news={displayNews} />
 
       <Footer />
     </div>
