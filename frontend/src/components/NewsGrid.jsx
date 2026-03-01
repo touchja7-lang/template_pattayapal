@@ -12,7 +12,6 @@ const NewsGrid = () => {
   const [error, setError]         = useState(null);
   const { t, lang }               = useLanguage();
 
-  /* แปล news array อัตโนมัติเมื่อ lang เปลี่ยน */
   const { data: displayNews, translating } = useTranslatedNews(newsItems);
 
   const fetchNews = useCallback(async () => {
@@ -77,7 +76,6 @@ const NewsGrid = () => {
 
   return (
     <div className="ng-section">
-      {/* Header */}
       <div className="ng-header">
         <div className="ng-header-left">
           <div className="ng-header-bar" />
@@ -88,10 +86,9 @@ const NewsGrid = () => {
         </Link>
       </div>
 
-      {/* Translating indicator */}
       {translating && (
         <div className="ng-translating">
-          <span className="ng-translating-spinner" /> Translating...
+          <span className="ng-translating-spinner" /> {t('translating')}
         </div>
       )}
 

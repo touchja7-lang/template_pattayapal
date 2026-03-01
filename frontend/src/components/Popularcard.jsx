@@ -6,8 +6,6 @@ import { useLanguage } from '../context/Languagecontext';
 import { useTranslatedNews } from '../hooks/useTranslatedNews';
 import './Popularcard.css';
 
-// รับ news prop จากข้างนอกได้ (News.jsx ส่งมา)
-// ถ้าไม่มี prop จะดึงข้อมูลเองเหมือนเดิม (ใช้ใน Home.jsx)
 const PopularSection = ({ news: newsProp }) => {
   const { t, lang }           = useLanguage();
   const [rawNews, setRawNews] = useState([]);
@@ -27,16 +25,18 @@ const PopularSection = ({ news: newsProp }) => {
       .finally(() => setLoading(false));
   }, [newsProp]);
 
-  // ถ้ามี prop ให้เอา 5 อันดับแรกตาม views
+  // ถ้ามี prop (News.jsx ส่งมา) ให้เรียง views แล้วเอา 5 อันดับแรก
   const sourceNews = newsProp
     ? [...newsProp].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5)
     : rawNews;
 
-  // แปลภาษา
+  // hook นี้จะ re-translate อัตโนมัติเมื่อ lang หรือ sourceNews เปลี่ยน
   const { data: popularNews, translating } = useTranslatedNews(sourceNews);
 
   const getCategoryName = (cat) =>
-    cat && typeof cat === 'object' ? cat.name || (lang === 'en' ? 'General' : 'ทั่วไป') : cat || (lang === 'en' ? 'General' : 'ทั่วไป');
+    cat && typeof cat === 'object'
+      ? cat.name || (lang === 'en' ? 'General' : 'ทั่วไป')
+      : cat || (lang === 'en' ? 'General' : 'ทั่วไป');
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -84,7 +84,6 @@ const PopularSection = ({ news: newsProp }) => {
       )}
 
       <div className={`ps-layout ${translating ? 'ps-fading' : ''}`}>
-
         <Link to={`/news/${featured._id}`} className="ps-featured">
           <div className="ps-featured-img-wrap">
             <img
