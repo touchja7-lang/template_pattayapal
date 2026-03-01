@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════
 
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { translateNewsArray, translateNewsDetail, translateText } from '../services/translationService';
 
 // ─────────────────────────────────────────────────────
 //  LOCALES
@@ -164,14 +165,31 @@ export function LanguageProvider({ children }) {
     }
   }, []);
 
-  /* t('key') → ข้อความตาม locale ปัจจุบัน
-     fallback: th → key (กรณีลืมเพิ่ม key) */
+  /* t('key') → ข้อความตาม locale ปัจจุบัน */
   const t = useCallback((key) => {
     return locales[lang]?.[key] ?? locales['th']?.[key] ?? key;
   }, [lang]);
 
+  /* ── แปล news array (title + category) ── */
+  const translateList = useCallback(async (newsArray) => {
+    if (lang === 'th') return newsArray;
+    return translateNewsArray(newsArray, lang);
+  }, [lang]);
+
+  /* ── แปล news detail เดี่ยว (title + content + category) ── */
+  const translateDetail = useCallback(async (news) => {
+    if (lang === 'th') return news;
+    return translateNewsDetail(news, lang);
+  }, [lang]);
+
+  /* ── แปลข้อความเดี่ยว (สำหรับ category name ใน URL ฯลฯ) ── */
+  const translate = useCallback(async (text) => {
+    if (lang === 'th') return text;
+    return translateText(text, { to: lang });
+  }, [lang]);
+
   return (
-    <LanguageContext.Provider value={{ lang, switchLang, t }}>
+    <LanguageContext.Provider value={{ lang, switchLang, t, translateList, translateDetail, translate }}>
       {children}
     </LanguageContext.Provider>
   );
