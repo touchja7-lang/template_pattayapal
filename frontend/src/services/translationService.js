@@ -1,24 +1,28 @@
-const API_KEY  = process.env.REACT_APP_GOOGLE_TRANSLATE_KEY || '';
+// ─────────────────────────────────────────────────────────────────────────────
+//  translationService.js  →  src/services/translationService.js
+//  ใช้ import.meta.env เพราะโปรเจกต์นี้ใช้ Vite (ไม่ใช่ Create React App)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const API_KEY  = import.meta.env.VITE_GOOGLE_TRANSLATE_KEY || '';
 const BASE_URL = 'https://translation.googleapis.com/language/translate/v2';
+
+if (!API_KEY) {
+  console.warn('[translationService] VITE_GOOGLE_TRANSLATE_KEY is not set — translation will be skipped');
+}
 
 /* ── In-memory cache: { "th::en::ข้อความ" → "translated" } ── */
 const cache = new Map();
-
 const cacheKey = (text, from, to) => `${from}::${to}::${text}`;
 
-/**
- * translateText — แปลข้อความเดียว
- */
+// ─────────────────────────────────────────────────────
+//  translateText — แปลข้อความเดียว
+// ─────────────────────────────────────────────────────
 export const translateText = async (text, { from = 'th', to = 'en' } = {}) => {
   if (!text?.trim() || from === to) return text;
+  if (!API_KEY) return text;
 
   const key = cacheKey(text, from, to);
   if (cache.has(key)) return cache.get(key);
-
-  if (!API_KEY) {
-    console.warn('REACT_APP_GOOGLE_TRANSLATE_KEY not set');
-    return text;
-  }
 
   try {
     const res = await fetch(`${BASE_URL}?key=${API_KEY}`, {
@@ -31,23 +35,20 @@ export const translateText = async (text, { from = 'th', to = 'en' } = {}) => {
     cache.set(key, translated);
     return translated;
   } catch (err) {
-    console.error('Translation error:', err);
+    console.error('[translationService] translateText error:', err);
     return text;
   }
 };
 
-/**
- * translateBatch — แปลหลายข้อความพร้อมกันใน 1 request (ประหยัด quota)
- * @param {string[]} texts
- * @returns {Promise<string[]>}
- */
+// ─────────────────────────────────────────────────────
+//  translateBatch — แปลหลายข้อความใน 1 request
+// ─────────────────────────────────────────────────────
 export const translateBatch = async (texts, { from = 'th', to = 'en' } = {}) => {
   if (!texts?.length || from === to) return texts;
   if (!API_KEY) return texts;
 
-  /* แยก cached vs uncached */
-  const results   = new Array(texts.length);
-  const toFetch   = [];   // { idx, text }
+  const results = new Array(texts.length);
+  const toFetch = [];
 
   texts.forEach((text, idx) => {
     if (!text?.trim()) { results[idx] = text; return; }
@@ -81,24 +82,19 @@ export const translateBatch = async (texts, { from = 'th', to = 'en' } = {}) => 
       results[idx] = translated;
     });
   } catch (err) {
-    console.error('Batch translation error:', err);
+    console.error('[translationService] translateBatch error:', err);
     toFetch.forEach(({ idx, text }) => { results[idx] = text; });
   }
 
   return results;
 };
 
-/**
- * translateNewsArray — แปล array ของ news objects
- * แปลเฉพาะ field: title, category.name / category
- * @param {object[]} newsArray
- * @param {string}   to  — target language
- * @returns {Promise<object[]>}
- */
+// ─────────────────────────────────────────────────────
+//  translateNewsArray — แปล array ของ news (title + category)
+// ─────────────────────────────────────────────────────
 export const translateNewsArray = async (newsArray, to = 'en') => {
   if (!newsArray?.length || to === 'th') return newsArray;
 
-  /* รวม title + category name เป็น batch เดียว */
   const titles = newsArray.map(n => n.title || '');
   const cats   = newsArray.map(n => n.category?.name || n.category || '');
 
@@ -116,15 +112,15 @@ export const translateNewsArray = async (newsArray, to = 'en') => {
   }));
 };
 
-/**
- * translateNewsDetail — แปล news object เดียว รวม content (HTML)
- */
+// ─────────────────────────────────────────────────────
+//  translateNewsDetail — แปล news เดี่ยว รวม content HTML
+// ─────────────────────────────────────────────────────
 export const translateNewsDetail = async (news, to = 'en') => {
   if (!news || to === 'th') return news;
 
   const [title, content, catName] = await Promise.all([
-    translateText(news.title || '', { to }),
-    translateText(news.content || '', { to }),          // แปล HTML content ด้วย
+    translateText(news.title   || '', { to }),
+    translateText(news.content || '', { to }),
     translateText(news.category?.name || news.category || '', { to }),
   ]);
 
