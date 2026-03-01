@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api.js';
+import { useLanguage } from '../context/Languagecontext';
+import { useTranslatedNews } from '../hooks/useTranslatedNews';
 import './ImageSlider.css';
 
 const ImageSlider = () => {
-  const [news, setNews] = useState([]);
+  const [rawNews, setRawNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t, lang }           = useLanguage();
+
+  const { data: news } = useTranslatedNews(rawNews);
 
   useEffect(() => {
     const fetchLatestNews = async () => {
@@ -14,7 +19,7 @@ const ImageSlider = () => {
           params: { sort: '-createdAt', limit: 6 }
         });
         if (response.data && response.data.length > 0) {
-          setNews(response.data);
+          setRawNews(response.data);
         }
       } catch (err) {
         console.error('Error fetching slider news:', err);
@@ -29,7 +34,7 @@ const ImageSlider = () => {
     return (
       <div className="isl-loading">
         <div className="isl-loading-spinner" />
-        <span>กำลังโหลดข่าว...</span>
+        <span>{t('nd_loading')}</span>
       </div>
     );
   }
@@ -42,26 +47,28 @@ const ImageSlider = () => {
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
+    if (lang === 'en') {
+      return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
     const h = String(d.getHours()).padStart(2, '0');
     const m = String(d.getMinutes()).padStart(2, '0');
     return `${h}:${m} น.`;
   };
 
   const getCategoryName = (cat) =>
-    cat && typeof cat === 'object' ? cat.name || 'ข่าวสาร' : cat || 'ข่าวสาร';
+    cat && typeof cat === 'object'
+      ? cat.name || t('nd_news')
+      : cat || t('nd_news');
 
   return (
     <section className="isl-section">
-      {/* ── HEADER ── */}
       <div className="isl-header">
         <div className="isl-header-icon" />
-        <h2 className="isl-header-title">ข่าวเด่นวันนี้</h2>
+        <h2 className="isl-header-title">{t('hero_latest')}</h2>
       </div>
 
-      {/* ── CONTENT GRID ── */}
       <div className="isl-grid">
 
-        {/* LEFT: Featured */}
         <Link to={`/news/${featured._id}`} className="isl-featured">
           <div className="isl-featured-img-wrap">
             <img
@@ -75,16 +82,19 @@ const ImageSlider = () => {
             <span className="isl-time">{formatTime(featured.createdAt)}</span>
             <h3 className="isl-featured-title">{featured.title}</h3>
             <div className="isl-meta">
-              <span>👁 {featured.views || 0} ครั้ง</span>
+              <span>👁 {featured.views || 0} {t('views')}</span>
             </div>
           </div>
         </Link>
 
-        {/* RIGHT: Side list */}
         <div className="isl-side">
           <div className="isl-side-header">
-            <h3 className="isl-side-title">รายงานความคืบหน้า</h3>
-            <Link to="/news" className="isl-side-more">ดูเพิ่มเติม →</Link>
+            <h3 className="isl-side-title">
+              {lang === 'en' ? 'Latest Updates' : 'รายงานความคืบหน้า'}
+            </h3>
+            <Link to="/news" className="isl-side-more">
+              {lang === 'en' ? 'View More →' : 'ดูเพิ่มเติม →'}
+            </Link>
           </div>
 
           <div className="isl-side-list">
@@ -100,7 +110,7 @@ const ImageSlider = () => {
                 </div>
                 <div className="isl-side-content">
                   <p className="isl-side-item-title">{item.title}</p>
-                  <span className="isl-side-views">👁 {item.views || 0} ครั้ง</span>
+                  <span className="isl-side-views">👁 {item.views || 0} {t('views')}</span>
                 </div>
               </Link>
             ))}

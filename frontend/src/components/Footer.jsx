@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { IoLogoFacebook, IoLogoTiktok, IoLogoInstagram, IoLogoYoutube, IoGlobeOutline } from "react-icons/io5";
 import { categoryAPI } from '../services/api';
+import { useLanguage } from '../context/Languagecontext';
 import './Footer.css';
 
 const Footer = () => {
   const [categories, setCategories] = useState([]);
+  const { t, lang } = useLanguage();
 
   useEffect(() => {
     categoryAPI.getAll()
@@ -16,13 +18,12 @@ const Footer = () => {
   return (
     <footer className="ft-root">
 
-      {/* ── MAIN COLUMNS ── */}
       <div className="ft-main">
         <div className="ft-inner">
 
           {/* หมวดหมู่ */}
           <div className="ft-col">
-            <h4 className="ft-col-title">หมวดหมู่</h4>
+            <h4 className="ft-col-title">{t('footer_categories')}</h4>
             <div className="ft-links">
               {categories.length > 0 ? (
                 categories.map(cat => (
@@ -34,25 +35,27 @@ const Footer = () => {
                   </Link>
                 ))
               ) : (
-                <span className="ft-loading-text">กำลังโหลด...</span>
+                <span className="ft-loading-text">{t('nd_loading')}</span>
               )}
             </div>
           </div>
 
           {/* เกี่ยวกับเรา */}
           <div className="ft-col">
-            <h4 className="ft-col-title">เกี่ยวกับเรา</h4>
+            <h4 className="ft-col-title">{t('about_title')}</h4>
             <div className="ft-links">
-              <Link to="/about">เกี่ยวกับเรา</Link>
-              <Link to="/contact">ติดต่อเรา</Link>
-              <Link to="/privacy">นโยบายความเป็นส่วนตัว</Link>
-              <Link to="/terms">เงื่อนไขการใช้งาน</Link>
+              <Link to="/about">{t('about_title')}</Link>
+              <Link to="/contact">{t('contact_title')}</Link>
+              <Link to="/privacy">{t('privacy_title')}</Link>
+              <Link to="/terms">{t('terms_title')}</Link>
             </div>
           </div>
 
           {/* ติดตามเราได้ที่ */}
           <div className="ft-col ft-col-social">
-            <h4 className="ft-col-title">ติดตามเราได้ที่</h4>
+            <h4 className="ft-col-title">
+              {lang === 'en' ? 'Follow Us' : 'ติดตามเราได้ที่'}
+            </h4>
             <div className="ft-social">
               <a href="https://web.facebook.com/Athipburapa.news?locale=th_TH" target="_blank" rel="noreferrer" aria-label="Facebook">
                 <IoLogoFacebook />
@@ -67,17 +70,21 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* ── BOTTOM: เกี่ยวกับ + copyright ── */}
+      {/* Bottom bar */}
       <div className="ft-bottom">
         <div className="ft-bottom-inner">
           <div className="ft-bottom-links">
-            <span className="ft-bottom-label">เกี่ยวกับ Athipburapa</span>
-            <Link to="/about">เกี่ยวกับเรา</Link>
-            <Link to="/contact">ติดต่อเรา</Link>
-            <Link to="/privacy">นโยบายความเป็นส่วนตัว</Link>
-            <Link to="/terms">เงื่อนไขการใช้งาน</Link>
+            <span className="ft-bottom-label">
+              {lang === 'en' ? 'About Athipburapa' : 'เกี่ยวกับ Athipburapa'}
+            </span>
+            <Link to="/about">{t('about_title')}</Link>
+            <Link to="/contact">{t('contact_title')}</Link>
+            <Link to="/privacy">{t('privacy_title')}</Link>
+            <Link to="/terms">{t('terms_title')}</Link>
           </div>
-          <p className="ft-copyright">© 2026 Athipburapa - เว็บไซต์ข่าวสารออนไลน์ สงวนลิขสิทธิ์</p>
+          <p className="ft-copyright">
+            © 2026 Athipburapa - {lang === 'en' ? 'Online News Website. All rights reserved.' : 'เว็บไซต์ข่าวสารออนไลน์ สงวนลิขสิทธิ์'}
+          </p>
         </div>
       </div>
 
