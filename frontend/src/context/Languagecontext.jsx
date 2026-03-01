@@ -1,13 +1,3 @@
-// src/context/LanguageContext.jsx
-// ══════════════════════════════════════════════════════
-//  ครบในไฟล์เดียว: locales + Context + Provider + hook
-//
-//  วิธีใช้:
-//  1. ครอบ App ด้วย <LanguageProvider> ใน main.jsx
-//  2. ในทุก component: const { t, lang, switchLang } = useLanguage()
-//  3. แทน text ด้วย t('key') เช่น t('nav_allNews')
-// ══════════════════════════════════════════════════════
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { translateNewsArray, translateNewsDetail, translateText } from '../services/translationService';
 
@@ -203,46 +193,3 @@ export function useLanguage() {
   if (!ctx) throw new Error('useLanguage must be used inside <LanguageProvider>');
   return ctx;
 }
-
-// ─────────────────────────────────────────────────────
-//  KEY REFERENCE  (copy-paste ไปใช้ใน component)
-// ─────────────────────────────────────────────────────
-//
-//  import { useLanguage } from '../context/LanguageContext';
-//  const { t, lang, switchLang } = useLanguage();
-//
-//  Navbar ──────────────────────────────────────────────
-//  t('nav_allNews')       t('nav_search')
-//  t('nav_login')         t('nav_profile')
-//  t('nav_admin')         t('nav_logout')
-//
-//  Footer ──────────────────────────────────────────────
-//  t('footer_tagline')    t('footer_links')
-//  t('footer_home')       t('footer_news')
-//  t('footer_categories') t('footer_rights')
-//
-//  NewsDetail ──────────────────────────────────────────
-//  t('nd_back')           t('nd_backAll')
-//  t('nd_home')           t('nd_news')
-//  t('nd_views')          t('nd_viewCount')
-//  t('nd_loading')        t('nd_notFound')
-//  t('nd_notFoundBack')   t('nd_tts_listen')
-//  t('nd_tts_reading')    t('nd_tts_paused')
-//  t('nd_tts_idle')       t('nd_tts_speed')
-//
-//  CategoryNews ────────────────────────────────────────
-//  t('cn_category')       t('cn_backAll')
-//  t('cn_found')          t('cn_foundSuffix')
-//  t('cn_empty')          t('cn_emptyDesc')
-//  t('cn_emptyBtn')       t('cn_loading')
-//
-//  CategoryFilter ──────────────────────────────────────
-//  t('cf_title')          t('cf_all')    t('cf_noNews')
-//
-//  General ─────────────────────────────────────────────
-//  t('readMore')          t('views')     t('noImage')
-//  t('popular_title')     t('popular_views')
-//
-//  ปุ่มเปลี่ยนภาษาใน Navbar ────────────────────────────
-//  <button onClick={() => switchLang('th')} className={`nb-lang-btn ${lang==='th'?'active':''}`}>TH</button>
-//  <button onClick={() => switchLang('en')} className={`nb-lang-btn ${lang==='en'?'active':''}`}>EN</button>

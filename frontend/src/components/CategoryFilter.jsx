@@ -1,12 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/Languagecontext';
+import { useTranslatedNews } from '../hooks/useTranslatedNews';
 import './CategoryFilter.css';
 
 function CategoryFilter({ categories, selectedCategory, onSelectCategory, news = [] }) {
+  const { t, lang } = useLanguage();
+
+  /* แปล news cards อัตโนมัติ */
+  const { data: displayNews, translating } = useTranslatedNews(news);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     const d = new Date(dateStr);
+    if (lang === 'en') {
+      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
     return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear() + 543}`;
   };
 
@@ -18,7 +27,7 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
 
       {/* ── PAGE TITLE ── */}
       <div className="cf-page-title">
-        <h1 className="cf-page-title-text">ข่าวสารทั้งหมด</h1>
+        <h1 className="cf-page-title-text">{t('cf_title')}</h1>
         <div className="cf-page-title-line" />
       </div>
 
@@ -28,7 +37,7 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
           className={`cf-pill ${selectedCategory === '' ? 'active' : ''}`}
           onClick={() => onSelectCategory('')}
         >
-          ทั้งหมด
+          {t('cf_all')}
         </button>
         {categories.map((category) => (
           <button
@@ -41,17 +50,23 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
         ))}
       </div>
 
+      {/* Translating indicator */}
+      {translating && (
+        <div className="cf-translating">
+          <span className="cf-translating-spinner" /> Translating...
+        </div>
+      )}
+
       {/* ── NEWS GRID ── */}
-      {news.length > 0 ? (
-        <div className="cf-grid">
-          {news.map((item, index) => (
+      {displayNews.length > 0 ? (
+        <div className={`cf-grid ${translating ? 'cf-fading' : ''}`}>
+          {displayNews.map((item, index) => (
             <Link
               to={`/news/${item._id}`}
               key={item._id}
               className="cf-card"
               style={{ animationDelay: `${(index % 6) * 0.06}s` }}
             >
-              {/* Image */}
               <div className="cf-card-img-wrap">
                 <img
                   src={item.image || item.thumbnail}
@@ -59,27 +74,26 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
                   className="cf-card-img"
                   onError={(e) => { e.target.onerror = null; e.target.src = '/images/placeholder.png'; }}
                 />
-                {/* overlay ด้านล่างรูป */}
                 <div className="cf-card-img-overlay">
                   {getCatName(item.category) && (
                     <span className="cf-card-cat">{getCatName(item.category)}</span>
                   )}
                 </div>
               </div>
-
-              {/* Body */}
               <div className="cf-card-body">
                 <p className="cf-card-title">{item.title}</p>
                 <div className="cf-card-footer">
                   <span className="cf-card-date">{formatDate(item.createdAt)}</span>
-                  <span className="cf-card-views">👁 {item.views || 0} ครั้ง</span>
+                  <span className="cf-card-views">
+                    👁 {item.views || 0} {t('popular_views')}
+                  </span>
                 </div>
               </div>
             </Link>
           ))}
         </div>
       ) : (
-        <div className="cf-empty">ไม่พบข่าวในหมวดหมู่นี้</div>
+        <div className="cf-empty">{t('cf_noNews')}</div>
       )}
 
     </div>
