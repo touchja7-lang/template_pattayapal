@@ -3,11 +3,13 @@ import { IoPerson, IoSettingsOutline, IoMenu, IoClose, IoLogOut } from "react-ic
 import { CiSearch } from "react-icons/ci";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/Languagecontext';
 import { categoryAPI } from '../services/api';
 import './Navbar.css';
 
 function Navbar() {
   const { user, logout } = useAuth();
+  const { lang, switchLang, t } = useLanguage();
   const navigate = useNavigate();
   const location  = useLocation();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -71,6 +73,20 @@ function Navbar() {
           </div>
 
           <div className="nb-right">
+            {/* ── Language switcher ── */}
+            <div className="nb-lang-switcher">
+              <button
+                className={`nb-lang-btn${lang === 'th' ? ' active' : ''}`}
+                onClick={() => switchLang('th')}
+                aria-label="ภาษาไทย"
+              >TH</button>
+              <span className="nb-lang-sep">|</span>
+              <button
+                className={`nb-lang-btn${lang === 'en' ? ' active' : ''}`}
+                onClick={() => switchLang('en')}
+                aria-label="English"
+              >EN</button>
+            </div>
             <button className="nb-icon-btn" onClick={() => setShowSearch(true)} aria-label="ค้นหา">
               <CiSearch />
             </button>
@@ -101,15 +117,15 @@ function Navbar() {
                         <span className="email">{user.email}</span>
                       </div>
                       <Link to="/profile" onClick={() => setShowUserMenu(false)}>
-                        <IoPerson /> โปรไฟล์
+                        <IoPerson /> {t('nav_profile')}
                       </Link>
                       {user.role === 'admin' && (
                         <Link to="/admin" onClick={() => setShowUserMenu(false)}>
-                          <IoSettingsOutline /> แอดมิน
+                          <IoSettingsOutline /> {t('nav_admin')}
                         </Link>
                       )}
                       <button onClick={handleLogout}>
-                        <IoLogOut /> ออกจากระบบ
+                        <IoLogOut /> {t('nav_logout')}
                       </button>
                     </div>
                   </>
@@ -117,7 +133,7 @@ function Navbar() {
               </div>
             ) : (
               <Link to="/login" className="nb-login-btn">
-                <IoPerson /><span className="nb-login-text">เข้าสู่ระบบ</span>
+                <IoPerson /><span className="nb-login-text">{t('nav_login')}</span>
               </Link>
             )}
           </div>
@@ -125,7 +141,7 @@ function Navbar() {
 
         {/* ── CATEGORY BAR ── */}
         <div className="nb-cats">
-          <Link to="/news" className={`nb-cat-link${isAllActive ? ' active' : ''}`}>ข่าวทั้งหมด</Link>
+          <Link to="/news" className={`nb-cat-link${isAllActive ? ' active' : ''}`}>{t('nav_allNews')}</Link>
           {categories.map(cat => (
             <Link
               key={cat._id}
@@ -146,7 +162,7 @@ function Navbar() {
               <input
                 ref={searchRef}
                 type="text"
-                placeholder="ค้นหาข่าว..."
+                placeholder={t('nav_search')}
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
               />
@@ -171,11 +187,11 @@ function Navbar() {
             </div>
             <div className="nb-drawer-links">
               <Link to="/news" className={`nb-drawer-link${isAllActive ? ' active' : ''}`} onClick={() => setShowMobileMenu(false)}>
-                ข่าวทั้งหมด
+                {t('nav_allNews')}
               </Link>
               {categories.length > 0 && (
                 <>
-                  <div className="nb-drawer-section-title">หมวดหมู่</div>
+                  <div className="nb-drawer-section-title">{t('nav_categories')}</div>
                   {categories.map(cat => (
                     <Link
                       key={cat._id}
