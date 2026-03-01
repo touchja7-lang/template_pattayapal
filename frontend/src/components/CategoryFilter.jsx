@@ -1,14 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/Languagecontext';
-import { useTranslatedNews } from '../hooks/useTranslatedNews';
 import './CategoryFilter.css';
 
+// news ที่รับมาแปลแล้วจาก News.jsx แล้ว — ไม่ต้องแปลซ้ำ
 function CategoryFilter({ categories, selectedCategory, onSelectCategory, news = [] }) {
   const { t, lang } = useLanguage();
-
-  /* แปล news cards อัตโนมัติ */
-  const { data: displayNews, translating } = useTranslatedNews(news);
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
@@ -25,13 +22,11 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
   return (
     <div className="cf-root">
 
-      {/* ── PAGE TITLE ── */}
       <div className="cf-page-title">
         <h1 className="cf-page-title-text">{t('cf_title')}</h1>
         <div className="cf-page-title-line" />
       </div>
 
-      {/* ── FILTER PILLS ── */}
       <div className="cf-pills">
         <button
           className={`cf-pill ${selectedCategory === '' ? 'active' : ''}`}
@@ -50,17 +45,9 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
         ))}
       </div>
 
-      {/* Translating indicator */}
-      {translating && (
-        <div className="cf-translating">
-          <span className="cf-translating-spinner" /> Translating...
-        </div>
-      )}
-
-      {/* ── NEWS GRID ── */}
-      {displayNews.length > 0 ? (
-        <div className={`cf-grid ${translating ? 'cf-fading' : ''}`}>
-          {displayNews.map((item, index) => (
+      {news.length > 0 ? (
+        <div className="cf-grid">
+          {news.map((item, index) => (
             <Link
               to={`/news/${item._id}`}
               key={item._id}
