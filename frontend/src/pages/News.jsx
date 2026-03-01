@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { newsAPI, categoryAPI } from '../services/api';
+import { useLanguage } from '../context/Languagecontext';
+import { useTranslatedNews } from '../hooks/useTranslatedNews';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import CategoryFilter from '../components/CategoryFilter';
@@ -9,16 +11,21 @@ import '../css/News.css';
 import PopularSection from '../components/Popularcard';
 
 function News() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const queryParams = new URLSearchParams(location.search);
+  const location  = useLocation();
+  const navigate  = useNavigate();
+  const { t }     = useLanguage();
+
+  const queryParams   = new URLSearchParams(location.search);
   const searchFromUrl = queryParams.get('search') || '';
 
-  const [newsList, setNewsList]           = useState([]);
-  const [categories, setCategories]       = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [loading, setLoading]             = useState(true);
-  const [searchTerm, setSearchTerm]       = useState(searchFromUrl);
+  const [newsList, setNewsList]                   = useState([]);
+  const [categories, setCategories]               = useState([]);
+  const [selectedCategory, setSelectedCategory]   = useState('');
+  const [loading, setLoading]                     = useState(true);
+  const [searchTerm, setSearchTerm]               = useState(searchFromUrl);
+
+  // ── แปลภาษา real-time ──────────────────────────────────────────────────────
+  const { data: displayNews, translating } = useTranslatedNews(newsList);
 
   useEffect(() => {
     categoryAPI.getAll()
@@ -58,21 +65,29 @@ function News() {
 
       <div className="news-page-container">
 
+        {/* ── translating banner ── */}
+        {translating && (
+          <div className="news-translating-bar">
+            <span className="news-translating-spinner" />
+            {t('translating')}
+          </div>
+        )}
+
         {/* ── search result banner ── */}
         {searchTerm && (
           <div className="news-search-banner">
-            <span>ผลการค้นหา: <strong>"{searchTerm}"</strong></span>
+            <span>{t('news_search_result')} <strong>"{searchTerm}"</strong></span>
             <button className="news-clear-btn" onClick={handleClearSearch}>
-              ✕ ล้างการค้นหา
+              {t('news_clear_search')}
             </button>
           </div>
         )}
 
-        {/* ── CategoryFilter รับ news prop แสดง grid + pills ── */}
+        {/* ── CategoryFilter ── */}
         {loading ? (
           <div className="news-loading">
             <div className="news-loading-spinner" />
-            <span>กำลังโหลดข่าวสาร...</span>
+            <span>{t('nd_loading')}</span>
           </div>
         ) : (
           <CategoryFilter
@@ -84,12 +99,13 @@ function News() {
               const cat = categories.find(c => c.name === catName);
               setSelectedCategory(cat ? cat._id : '');
             }}
-            news={newsList}
+            news={displayNews}  {/* ← ส่ง displayNews แทน newsList */}
           />
         )}
 
       </div>
-      <PopularSection news={newsList} />
+
+      <PopularSection news={displayNews} />  {/* ← ส่ง displayNews แทน newsList */}
 
       <Footer />
     </div>
