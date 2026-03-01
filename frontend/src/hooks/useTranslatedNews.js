@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLanguage } from '../src/context/Languagecontext.jsx';
+import { useLanguage } from '../context/Languagecontext';
 
 export function useTranslatedNews(rawNews) {
   const { lang, translateList } = useLanguage();
