@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/Languagecontext';
 import './CategoryFilter.css';
 
-// news ที่รับมาแปลแล้วจาก News.jsx แล้ว — ไม่ต้องแปลซ้ำ
 function CategoryFilter({ categories, selectedCategory, onSelectCategory, news = [] }) {
   const { t, lang } = useLanguage();
 
@@ -16,12 +15,14 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
     return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear() + 543}`;
   };
 
-  const getCatName = (cat) =>
-    cat && typeof cat === 'object' ? cat.name || '' : cat || '';
+  // ดึงชื่อหมวดหมู่และส่งเข้าฟังก์ชัน t() เพื่อแปลภาษา
+  const getCatName = (cat) => {
+    const name = cat && typeof cat === 'object' ? cat.name || '' : cat || '';
+    return t(name); // แปลภาษา Real-time จาก Key ที่ได้จาก DB
+  };
 
   return (
     <div className="cf-root">
-
       <div className="cf-page-title">
         <h1 className="cf-page-title-text">{t('cf_title')}</h1>
         <div className="cf-page-title-line" />
@@ -40,7 +41,8 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
             className={`cf-pill ${selectedCategory === category ? 'active' : ''}`}
             onClick={() => onSelectCategory(category)}
           >
-            {category}
+            {/* แปลชื่อหมวดหมู่บนปุ่ม Filter */}
+            {t(category)}
           </button>
         ))}
       </div>
@@ -62,8 +64,11 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
                   onError={(e) => { e.target.onerror = null; e.target.src = '/images/placeholder.png'; }}
                 />
                 <div className="cf-card-img-overlay">
-                  {getCatName(item.category) && (
-                    <span className="cf-card-cat">{getCatName(item.category)}</span>
+                  {item.category && (
+                    <span className="cf-card-cat">
+                      {/* แปลชื่อหมวดหมู่บน Tag บนรูปภาพ */}
+                      {getCatName(item.category)}
+                    </span>
                   )}
                 </div>
               </div>
@@ -82,7 +87,6 @@ function CategoryFilter({ categories, selectedCategory, onSelectCategory, news =
       ) : (
         <div className="cf-empty">{t('cf_noNews')}</div>
       )}
-
     </div>
   );
 }
