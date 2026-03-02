@@ -3,17 +3,42 @@ import { Link } from 'react-router-dom';
 import { IoLogoFacebook, IoLogoTiktok, IoLogoInstagram, IoLogoYoutube, IoGlobeOutline } from "react-icons/io5";
 import { categoryAPI } from '../services/api';
 import { useLanguage } from '../context/Languagecontext';
+import { translateBatch } from '../services/translationService'; // นำเข้าตัวแปลภาษา
 import './Footer.css';
 
 const Footer = () => {
   const [categories, setCategories] = useState([]);
-  const { t } = useLanguage();
+  const [displayCats, setDisplayCats] = useState([]); // State สำหรับเก็บชื่อที่แปลแล้ว
+  const { t, lang } = useLanguage();
 
+  // 1. ดึงข้อมูลหมวดหมู่จาก API
   useEffect(() => {
     categoryAPI.getAll()
-      .then(res => setCategories(res.data))
+      .then(res => {
+        setCategories(res.data);
+      })
       .catch(err => console.error('Error fetching categories:', err));
   }, []);
+
+  // 2. จัดการเรื่องการแปลภาษาแบบ Real-time
+  useEffect(() => {
+    const updateNames = async () => {
+      if (categories.length === 0) return;
+      
+      const rawNames = categories.map(c => c.name);
+
+      if (lang === 'en') {
+        // ถ้าเป็น EN ให้แปลผ่าน Google Translate API
+        const translated = await translateBatch(rawNames, { from: 'th', to: 'en' });
+        setDisplayCats(translated);
+      } else {
+        // ถ้าเป็น TH ให้ใช้ชื่อเดิมจาก Database
+        setDisplayCats(rawNames);
+      }
+    };
+
+    updateNames();
+  }, [lang, categories]); // ทำงานทุกครั้งที่เปลี่ยนภาษา หรือ Categories โหลดเสร็จ
 
   return (
     <footer className="ft-root">
@@ -25,9 +50,10 @@ const Footer = () => {
             <h4 className="ft-col-title">{t('footer_categories')}</h4>
             <div className="ft-links">
               {categories.length > 0 ? (
-                categories.map(cat => (
+                categories.map((cat, i) => (
                   <Link key={cat._id} to={`/news/category/${encodeURIComponent(cat.name)}`}>
-                    {cat.name}
+                    {/* แสดงชื่อที่แปลแล้ว ถ้ายังโหลดไม่เสร็จให้ใช้ชื่อต้นฉบับไปก่อน */}
+                    {displayCats[i] || cat.name}
                   </Link>
                 ))
               ) : (
