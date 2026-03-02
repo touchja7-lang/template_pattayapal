@@ -3,29 +3,34 @@ import { IoPerson, IoSettingsOutline, IoMenu, IoClose, IoLogOut } from "react-ic
 import { CiSearch } from "react-icons/ci";
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useLanguage } from '../context/Languagecontext';
+import { useLanguage } from '../context/Languagecontext'; // ตรวจสอบตัวสะกดชื่อไฟล์ Context ด้วยนะครับ
 import { categoryAPI } from '../services/api';
 import './Navbar.css';
 
 function Navbar() {
-  const { user, logout }        = useAuth();
+  const { user, logout } = useAuth();
   const { lang, switchLang, t } = useLanguage();
-  const navigate                = useNavigate();
-  const location                = useLocation();
-  const [showUserMenu, setShowUserMenu]     = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [showSearch, setShowSearch]         = useState(false);
-  const [searchTerm, setSearchTerm]         = useState('');
-  const [categories, setCategories]         = useState([]);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState([]);
   const searchRef = useRef(null);
 
   const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/616/616408.png';
 
+  // --- ส่วนที่แก้ไข: เพิ่ม [lang] เข้าไปเพื่อให้ Fetch ใหม่เมื่อเปลี่ยนภาษา ---
   useEffect(() => {
-    categoryAPI.getAll()
-      .then(res => setCategories(res.data))
+    // ส่งค่า lang ไปที่ API เพื่อให้ Backend ส่งชื่อหมวดหมู่ที่เป็นภาษานั้นๆ กลับมา
+    categoryAPI.getAll(lang) 
+      .then(res => {
+        setCategories(res.data);
+      })
       .catch(err => console.error('Error fetching categories:', err));
-  }, []);
+  }, [lang]); // <--- สำคัญมาก: เมื่อ lang เปลี่ยน useEffect นี้จะทำงานใหม่
 
   useEffect(() => {
     if (showSearch && searchRef.current) searchRef.current.focus();
@@ -48,9 +53,9 @@ function Navbar() {
     }
   };
 
-  const path        = location.pathname;
+  const path = location.pathname;
   const isAllActive = path === '/news';
-  const activeCat   = path.startsWith('/news/category/')
+  const activeCat = path.startsWith('/news/category/')
     ? decodeURIComponent(path.split('/news/category/')[1])
     : null;
 
@@ -60,7 +65,7 @@ function Navbar() {
         {/* ── TOP BAR ── */}
         <div className="nb-top">
           <div className="nb-left">
-            <button className="nb-icon-btn" onClick={() => setShowMobileMenu(true)} aria-label="เมนู">
+            <button className="nb-icon-btn" onClick={() => setShowMobileMenu(true)} aria-label="Menu">
               <IoMenu />
             </button>
           </div>
@@ -72,21 +77,18 @@ function Navbar() {
           </div>
 
           <div className="nb-right">
-            {/* ── Language switcher ── */}
             <div className="nb-lang-switcher">
               <button
                 className={`nb-lang-btn${lang === 'th' ? ' active' : ''}`}
                 onClick={() => switchLang('th')}
-                aria-label="ภาษาไทย"
               >TH</button>
               <button
                 className={`nb-lang-btn${lang === 'en' ? ' active' : ''}`}
                 onClick={() => switchLang('en')}
-                aria-label="English"
               >EN</button>
             </div>
 
-            <button className="nb-icon-btn" onClick={() => setShowSearch(true)} aria-label="ค้นหา">
+            <button className="nb-icon-btn" onClick={() => setShowSearch(true)}>
               <CiSearch />
             </button>
 
@@ -106,8 +108,8 @@ function Navbar() {
 
                 {showUserMenu && (
                   <>
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 999 }} onClick={() => setShowUserMenu(false)} />
-                    <div className="nb-dropdown" style={{ zIndex: 1000 }}>
+                    <div className="nb-menu-overlay" onClick={() => setShowUserMenu(false)} />
+                    <div className="nb-dropdown">
                       <div className="nb-dropdown-header">
                         <p className="name">{user.fullName || user.username}</p>
                         <span className="email">{user.email}</span>
@@ -146,7 +148,8 @@ function Navbar() {
               to={`/news/category/${encodeURIComponent(cat.name)}`}
               className={`nb-cat-link${activeCat === cat.name ? ' active' : ''}`}
             >
-              {cat.name}
+              {/* ถ้า Backend ส่งมาทั้งสองภาษา ให้ใช้เงื่อนไขเลือกแสดง เช่น cat.name_en หรือ cat.name_th */}
+              {lang === 'en' ? (cat.name_en || cat.name) : (cat.name_th || cat.name)}
             </Link>
           ))}
         </div>
@@ -184,7 +187,6 @@ function Navbar() {
               </button>
             </div>
 
-            {/* Lang switcher ใน drawer — แสดงเฉพาะ ≤360px */}
             <div className="nb-drawer-lang">
               <span className="nb-drawer-lang-label">Language</span>
               <div className="nb-lang-switcher">
@@ -217,7 +219,7 @@ function Navbar() {
                       className={`nb-drawer-cat${activeCat === cat.name ? ' active' : ''}`}
                       onClick={() => setShowMobileMenu(false)}
                     >
-                      {cat.name}
+                      {lang === 'en' ? (cat.name_en || cat.name) : (cat.name_th || cat.name)}
                     </Link>
                   ))}
                 </>
