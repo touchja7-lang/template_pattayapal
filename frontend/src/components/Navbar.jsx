@@ -10,7 +10,7 @@ import './Navbar.css';
 
 function Navbar() {
   const { user, logout } = useAuth();
-  const { lang, switchLang, t } = useLanguage(); // นำ switchLang มาใช้แก้ปัญหาปุ่มกด
+  const { lang, switchLang, t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -42,11 +42,9 @@ function Navbar() {
       const rawNames = categories.map(c => c.name);
 
       if (lang === 'en') {
-        // ถ้าเป็น EN ให้ไปเรียก Google Translate API
         const translated = await translateBatch(rawNames, { from: 'th', to: 'en' });
         setDisplayCats(translated);
       } else {
-        // ถ้าเป็น TH ให้คืนค่าดั้งเดิมจาก DB ทันที (แก้ปัญหาค้างเป็นภาษาอังกฤษ)
         setDisplayCats(rawNames);
       }
     };
@@ -54,10 +52,9 @@ function Navbar() {
     updateNames();
   }, [lang, categories]);
 
-  // ฟังก์ชันสลับภาษาที่ถูกต้อง
   const handleSwitchLang = (newLang) => {
-    switchLang(newLang); // อัปเดต State ใน Context
-    setShowMobileMenu(false); // ปิดเมนูมือถือถ้ามีการกดเปลี่ยน
+    switchLang(newLang);
+    setShowMobileMenu(false);
   };
 
   const handleLogout = () => {
@@ -98,7 +95,6 @@ function Navbar() {
           </div>
 
           <div className="nb-right">
-            {/* แก้ไขปุ่มสลับภาษา: ใช้ handleSwitchLang แทน navigate */}
             <div className="nb-lang-switcher">
               <button 
                 className={`nb-lang-btn${lang === 'th' ? ' active' : ''}`} 
@@ -115,14 +111,27 @@ function Navbar() {
             {user ? (
               <div className="nb-profile-wrap">
                 <div className="nb-avatar-btn" onClick={() => setShowUserMenu(!showUserMenu)}>
-                   {user.profileImage || user.image ? (
+                  {user.profileImage || user.image ? (
                     <img src={user.profileImage || user.image} alt="Profile" />
-                   ) : <IoPerson />}
+                  ) : <IoPerson />}
                 </div>
+
                 {showUserMenu && (
                   <div className="nb-dropdown">
-                    <Link to="/profile" onClick={() => setShowUserMenu(false)}><IoPerson /> {t('nav_profile')}</Link>
-                    <button onClick={handleLogout}><IoLogOut /> {t('nav_logout')}</button>
+                    <Link to="/profile" onClick={() => setShowUserMenu(false)}>
+                      <IoPerson /> {t('nav_profile')}
+                    </Link>
+
+                    {/* แสดงเฉพาะ admin */}
+                    {user.role === 'admin' && (
+                      <Link to="/admin" onClick={() => setShowUserMenu(false)}>
+                        <IoSettingsOutline /> {t('nav_admin') || 'จัดการข่าวสาร'}
+                      </Link>
+                    )}
+
+                    <button onClick={handleLogout}>
+                      <IoLogOut /> {t('nav_logout')}
+                    </button>
                   </div>
                 )}
               </div>
@@ -148,25 +157,70 @@ function Navbar() {
         </div>
       </nav>
 
+      {/* Search Overlay */}
+      {showSearch && (
+        <>
+          <div className="nb-drawer-backdrop" onClick={() => setShowSearch(false)} />
+          <div className="nb-search-overlay">
+            <form onSubmit={handleSearch}>
+              <input
+                ref={searchRef}
+                autoFocus
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={t('nav_searchPlaceholder') || 'ค้นหาข่าว...'}
+              />
+              <button type="submit"><CiSearch /></button>
+            </form>
+            <button className="nb-icon-btn nb-search-close" onClick={() => setShowSearch(false)}>
+              <IoClose />
+            </button>
+          </div>
+        </>
+      )}
+
       {/* Mobile Drawer */}
       {showMobileMenu && (
         <>
           <div className="nb-drawer-backdrop" onClick={() => setShowMobileMenu(false)} />
           <div className="nb-drawer">
-             {/* ส่วน Lang Switcher ใน Drawer */}
-             <div className="nb-drawer-lang">
-                <div className="nb-lang-switcher">
-                  <button onClick={() => handleSwitchLang('th')} className={lang === 'th' ? 'active' : ''}>TH</button>
-                  <button onClick={() => handleSwitchLang('en')} className={lang === 'en' ? 'active' : ''}>EN</button>
-                </div>
-             </div>
-             <div className="nb-drawer-links">
-               {categories.map((cat, i) => (
-                 <Link key={cat._id} to={`/news/category/${encodeURIComponent(cat.name)}`} className="nb-drawer-cat">
-                   {displayCats[i] || cat.name}
-                 </Link>
-               ))}
-             </div>
+            <button className="nb-drawer-close nb-icon-btn" onClick={() => setShowMobileMenu(false)}>
+              <IoClose />
+            </button>
+
+            {/* Lang Switcher ใน Drawer */}
+            <div className="nb-drawer-lang">
+              <div className="nb-lang-switcher">
+                <button onClick={() => handleSwitchLang('th')} className={lang === 'th' ? 'active' : ''}>TH</button>
+                <button onClick={() => handleSwitchLang('en')} className={lang === 'en' ? 'active' : ''}>EN</button>
+              </div>
+            </div>
+
+            <div className="nb-drawer-links">
+              <Link to="/news" className="nb-drawer-cat" onClick={() => setShowMobileMenu(false)}>
+                {t('nav_allNews')}
+              </Link>
+              {categories.map((cat, i) => (
+                <Link
+                  key={cat._id}
+                  to={`/news/category/${encodeURIComponent(cat.name)}`}
+                  className="nb-drawer-cat"
+                  onClick={() => setShowMobileMenu(false)}
+                >
+                  {displayCats[i] || cat.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Admin link ใน Drawer เฉพาะ admin */}
+            {user?.role === 'admin' && (
+              <div className="nb-drawer-admin">
+                <Link to="/admin" className="nb-drawer-admin-link" onClick={() => setShowMobileMenu(false)}>
+                  <IoSettingsOutline /> {t('nav_admin') || 'จัดการข่าวสาร'}
+                </Link>
+              </div>
+            )}
           </div>
         </>
       )}
