@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import api from '../services/api.js';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import PhotoAlbum from '../components/PhotoAlbum';   // ← NEW
 import { HiOutlineCalendar, HiOutlineEye } from "react-icons/hi";
 import { IoArrowBack, IoChevronForward,
          IoPlayCircle, IoPauseCircle, IoStopCircle,
@@ -21,8 +22,8 @@ function NewsDetail() {
   const { id }   = useParams();
   const { t, lang, translateDetail } = useLanguage();
 
-  const [news, setNews]                     = useState(null);       // raw จาก API
-  const [displayNews, setDisplayNews]       = useState(null);       // แปลแล้ว
+  const [news, setNews]                     = useState(null);
+  const [displayNews, setDisplayNews]       = useState(null);
   const [loading, setLoading]               = useState(true);
   const [translating, setTranslating]       = useState(false);
   const [error, setError]                   = useState(false);
@@ -81,7 +82,7 @@ function NewsDetail() {
       }
     }).catch(() => {
       if (!cancelled) {
-        setDisplayNews(news);   // fallback
+        setDisplayNews(news);
         setTranslating(false);
       }
     });
@@ -161,7 +162,6 @@ function NewsDetail() {
     </div>
   );
 
-  /* ใช้ displayNews (แปลแล้ว) สำหรับ render ทั้งหมด */
   const d            = displayNews || news;
   const categoryLabel = d.category?.name || d.category || t('nd_news');
   const safeContent   = DOMPurify.sanitize(d.content || '');
@@ -171,12 +171,14 @@ function NewsDetail() {
       })
     : (news.date || (lang === 'en' ? 'Unknown date' : 'ไม่ระบุวันที่'));
 
+  // ── Album images: news.albumImages[] หรือ fallback เป็น []
+  const albumImages = Array.isArray(news.albumImages) ? news.albumImages : [];
+
   return (
     <div className="nd-root">
       <div className="nd-progress-bar" style={{ width: `${scrollProgress}%` }} />
       <Navbar />
 
-      {/* Translating banner */}
       {translating && (
         <div className="nd-translating-bar">
           <span className="nd-translating-spinner" />
@@ -275,6 +277,11 @@ function NewsDetail() {
 
             {/* Article body */}
             <article className="nd-body" dangerouslySetInnerHTML={{ __html: safeContent }} />
+
+            {/* ── PHOTO ALBUM ── (แสดงหลังเนื้อหา ถ้ามีรูป) */}
+            {albumImages.length > 0 && (
+              <PhotoAlbum images={albumImages} title={d.title} />
+            )}
 
             {/* Footer */}
             <div className="nd-card-footer">

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { newsAPI, categoryAPI } from '../services/api';
 import Navbar from '../components/Navbar';
-import { HiOutlinePencil, HiOutlineTrash, HiOutlinePlus } from "react-icons/hi";
+import { HiOutlinePencil, HiOutlineTrash, HiOutlinePlus, HiOutlinePhotograph, HiOutlineX } from "react-icons/hi";
 import '../css/Admin.css';
 
 const INITIAL_FORM = {
@@ -11,7 +11,8 @@ const INITIAL_FORM = {
   image: '',
   excerpt: '',
   content: '',
-  author: ''
+  author: '',
+  albumImages: [],   // ← NEW
 };
 
 function parseError(err) {
@@ -40,19 +41,128 @@ function validateForm(formData) {
     catch { errors.image = 'URL รูปภาพไม่ถูกต้อง'; }
   }
   if (!formData.content.trim()) errors.content = 'กรุณากรอกเนื้อหาข่าว';
+  // validate each album URL
+  const badAlbum = (formData.albumImages || []).filter(u => {
+    try { new URL(u); return false; } catch { return true; }
+  });
+  if (badAlbum.length > 0) errors.albumImages = 'URL รูปภาพบางรายการในอัลบั้มไม่ถูกต้อง';
   return errors;
 }
 
+/* ────────────────────────────────────────────────
+   AlbumEditor — sub-component สำหรับจัดการรายการ URL
+   ──────────────────────────────────────────────── */
+function AlbumEditor({ urls, onChange, disabled }) {
+  const [inputVal, setInputVal] = useState('');
+  const inputRef = useRef(null);
+
+  const add = () => {
+    const trimmed = inputVal.trim();
+    if (!trimmed) return;
+    // ตรวจ URL เบื้องต้น
+    try { new URL(trimmed); } catch { return; }
+    onChange([...urls, trimmed]);
+    setInputVal('');
+    inputRef.current?.focus();
+  };
+
+  const remove = (i) => onChange(urls.filter((_, idx) => idx !== i));
+
+  const move = (from, to) => {
+    const arr = [...urls];
+    const [item] = arr.splice(from, 1);
+    arr.splice(to, 0, item);
+    onChange(arr);
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); add(); }
+  };
+
+  return (
+    <div className="album-editor">
+      {/* input row */}
+      <div className="album-input-row">
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder="https://example.com/photo.jpg"
+          disabled={disabled}
+          className="album-url-input"
+        />
+        <button
+          type="button"
+          className="album-add-btn"
+          onClick={add}
+          disabled={disabled || !inputVal.trim()}
+        >
+          <HiOutlinePlus /> เพิ่ม
+        </button>
+      </div>
+
+      {/* preview list */}
+      {urls.length > 0 && (
+        <div className="album-preview-list">
+          {urls.map((url, i) => (
+            <div key={i} className="album-preview-item">
+              {/* reorder */}
+              <div className="album-order-btns">
+                <button type="button" disabled={disabled || i === 0}
+                  onClick={() => move(i, i - 1)} title="ขึ้น">▲</button>
+                <button type="button" disabled={disabled || i === urls.length - 1}
+                  onClick={() => move(i, i + 1)} title="ลง">▼</button>
+              </div>
+
+              {/* thumb */}
+              <img
+                src={url}
+                alt={`album-${i}`}
+                className="album-thumb"
+                onError={(e) => { e.target.src = '/images/placeholder.png'; }}
+              />
+
+              {/* url label */}
+              <span className="album-url-label" title={url}>{url}</span>
+
+              {/* remove */}
+              <button
+                type="button"
+                className="album-remove-btn"
+                onClick={() => remove(i)}
+                disabled={disabled}
+                title="ลบ"
+              >
+                <HiOutlineX />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {urls.length === 0 && (
+        <p className="album-empty-hint">
+          <HiOutlinePhotograph /> ยังไม่มีรูปในอัลบั้ม — วาง URL แล้วกด "เพิ่ม" หรือกด Enter
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* ────────────────────────────────────────────────
+   Main AdminDashboard
+   ──────────────────────────────────────────────── */
 function AdminDashboard() {
-  // ✅ ดึง loading จาก AuthContext ด้วย
   const { user, loading: authLoading } = useAuth();
 
-  const [news, setNews] = useState([]);
+  const [news, setNews]           = useState([]);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]     = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingNews, setEditingNews] = useState(null);
-  const [formData, setFormData] = useState(INITIAL_FORM);
+  const [formData, setFormData]   = useState(INITIAL_FORM);
   const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -86,17 +196,20 @@ function AdminDashboard() {
     }
   }, [showNotification]);
 
-  // ✅ fetch data เฉพาะเมื่อ auth เสร็จแล้วและเป็น admin
   useEffect(() => {
-    if (!authLoading && user?.role === 'admin') {
-      fetchData();
-    }
+    if (!authLoading && user?.role === 'admin') fetchData();
   }, [authLoading, user, fetchData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: undefined }));
+  };
+
+  // album-specific updater
+  const handleAlbumChange = (newUrls) => {
+    setFormData(prev => ({ ...prev, albumImages: newUrls }));
+    if (formErrors.albumImages) setFormErrors(prev => ({ ...prev, albumImages: undefined }));
   };
 
   const handleEdit = (item) => {
@@ -107,7 +220,8 @@ function AdminDashboard() {
       image: item.image || '',
       excerpt: item.excerpt || '',
       content: item.content || '',
-      author: item.author || ''
+      author: item.author || '',
+      albumImages: Array.isArray(item.albumImages) ? item.albumImages : [],
     });
     setFormErrors({});
     setShowModal(true);
@@ -166,31 +280,23 @@ function AdminDashboard() {
     }
   };
 
-  // ✅ ขั้นตอนที่ 1: รอ AuthContext โหลดเสร็จก่อน — ป้องกัน flash "ไม่มีสิทธิ์"
-  if (authLoading) {
-    return (
-      <div className="admin-page">
-        <Navbar />
-        <div className="admin-container">
-          <div className="admin-loading">กำลังตรวจสอบสิทธิ์...</div>
-        </div>
+  if (authLoading) return (
+    <div className="admin-page">
+      <Navbar />
+      <div className="admin-container">
+        <div className="admin-loading">กำลังตรวจสอบสิทธิ์...</div>
       </div>
-    );
-  }
+    </div>
+  );
 
-  // ✅ ขั้นตอนที่ 2: auth โหลดเสร็จแล้ว ค่อยตรวจ role
-  if (!user || user.role !== 'admin') {
-    return (
-      <div className="admin-page">
-        <Navbar />
-        <div className="admin-container">
-          <div className="admin-error">
-            <h2>คุณไม่มีสิทธิ์เข้าถึงหน้านี้</h2>
-          </div>
-        </div>
+  if (!user || user.role !== 'admin') return (
+    <div className="admin-page">
+      <Navbar />
+      <div className="admin-container">
+        <div className="admin-error"><h2>คุณไม่มีสิทธิ์เข้าถึงหน้านี้</h2></div>
       </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div className="admin-page">
@@ -220,6 +326,7 @@ function AdminDashboard() {
                   <th>รูปภาพ</th>
                   <th>หัวข้อข่าว</th>
                   <th>หมวดหมู่</th>
+                  <th>อัลบั้ม</th>
                   <th>วันที่</th>
                   <th>จัดการ</th>
                 </tr>
@@ -229,15 +336,16 @@ function AdminDashboard() {
                   news.map((item) => (
                     <tr key={item._id}>
                       <td>
-                        <img
-                          src={item.image}
-                          alt={item.title}
-                          className="admin-news-thumb"
-                          onError={(e) => { e.target.onerror = null; e.target.src = '/images/placeholder.png'; }}
-                        />
+                        <img src={item.image} alt={item.title} className="admin-news-thumb"
+                          onError={(e) => { e.target.onerror = null; e.target.src = '/images/placeholder.png'; }} />
                       </td>
                       <td className="admin-news-title">{item.title}</td>
                       <td>{item.category?.name || 'ไม่มีหมวดหมู่'}</td>
+                      <td className="admin-album-count">
+                        {Array.isArray(item.albumImages) && item.albumImages.length > 0
+                          ? <span className="album-badge"><HiOutlinePhotograph /> {item.albumImages.length} ภาพ</span>
+                          : <span className="album-badge-none">—</span>}
+                      </td>
                       <td>{new Date(item.createdAt).toLocaleDateString('th-TH')}</td>
                       <td className="admin-actions">
                         <button className="edit-btn" onClick={() => handleEdit(item)} title="แก้ไข">
@@ -250,7 +358,7 @@ function AdminDashboard() {
                     </tr>
                   ))
                 ) : (
-                  <tr><td colSpan="5" className="admin-empty">ยังไม่มีข่าวสาร</td></tr>
+                  <tr><td colSpan="6" className="admin-empty">ยังไม่มีข่าวสาร</td></tr>
                 )}
               </tbody>
             </table>
@@ -284,7 +392,7 @@ function AdminDashboard() {
               </div>
 
               <div className={`form-group${formErrors.image ? ' form-group--error' : ''}`}>
-                <label>URL รูปภาพ <span className="required">*</span></label>
+                <label>URL รูปภาพหลัก <span className="required">*</span></label>
                 <input type="text" name="image" value={formData.image} onChange={handleInputChange}
                   disabled={isSubmitting} placeholder="https://example.com/image.jpg" />
                 {formErrors.image && <span className="form-error-msg">{formErrors.image}</span>}
@@ -312,6 +420,23 @@ function AdminDashboard() {
                 <label>ผู้เขียน</label>
                 <input type="text" name="author" value={formData.author} onChange={handleInputChange}
                   disabled={isSubmitting} placeholder="ชื่อผู้เขียน (ไม่บังคับ)" />
+              </div>
+
+              {/* ── Album section ── */}
+              <div className={`form-group form-group-album${formErrors.albumImages ? ' form-group--error' : ''}`}>
+                <label>
+                  <HiOutlinePhotograph style={{ marginRight: '0.3em', verticalAlign: 'middle' }} />
+                  อัลบั้มภาพ
+                  <span className="form-optional"> (ไม่บังคับ)</span>
+                </label>
+                <AlbumEditor
+                  urls={formData.albumImages}
+                  onChange={handleAlbumChange}
+                  disabled={isSubmitting}
+                />
+                {formErrors.albumImages && (
+                  <span className="form-error-msg">{formErrors.albumImages}</span>
+                )}
               </div>
 
               <div className="modal-actions">
