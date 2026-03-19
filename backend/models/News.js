@@ -31,6 +31,11 @@ const newsSchema = new mongoose.Schema({
     type: String,
     default: 'Admin'
   },
+  // ✅ เพิ่ม albumImages
+  albumImages: {
+    type: [String],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now
